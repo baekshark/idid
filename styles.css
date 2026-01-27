@@ -119,3 +119,71 @@ button:active{transform:translateY(1px)}
 .foot{max-width:980px; margin:16px auto 26px; padding:0 16px}
 
 .miniList{margin:0; padding-left:18px; color:var(--text)}
+
+/* ---------- PIN Lock UI ---------- */
+.lock{
+  position:fixed; inset:0;
+  background: radial-gradient(900px 600px at 20% 0%, #1b1b22, #070708);
+  display:flex; align-items:center; justify-content:center;
+  padding:18px; z-index:9999;
+}
+.lock.hidden{display:none}
+
+.lockCard{
+  width:min(420px, 100%);
+  background:rgba(18,18,20,.92);
+  border:1px solid var(--line);
+  border-radius:22px;
+  padding:18px;
+  box-shadow:var(--shadow);
+}
+.lockTitle{font-weight:900; font-size:22px; letter-spacing:.2px}
+.lockSub{color:var(--muted); margin-top:6px; margin-bottom:14px}
+
+.pinDots{
+  display:flex; gap:10px; justify-content:center;
+  padding:10px 0 14px;
+}
+.dot{
+  width:12px; height:12px; border-radius:999px;
+  border:1px solid #3a3a40;
+  background:transparent;
+  opacity:.9;
+}
+.dot.filled{background:#fff; border-color:#fff}
+
+.pinPad{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:10px;
+  margin-top:6px;
+}
+.key{
+  padding:14px 0;
+  border-radius:16px;
+  border:1px solid var(--line);
+  background:#0f0f12;
+  color:var(--text);
+  font-size:18px;
+  font-weight:800;
+}
+.key:active{transform:translateY(1px)}
+.ghostKey{
+  background:transparent;
+  color:var(--muted);
+  font-size:14px;
+  font-weight:700;
+}
+.lockRow{
+  display:flex; gap:8px; justify-content:space-between;
+  margin-top:12px; flex-wrap:wrap;
+}
+.lockLink{padding:10px 12px}
+
+.lockMsg{
+  margin-top:10px;
+  color:var(--muted);
+  font-size:13px;
+  min-height:18px;
+  text-align:center;
+}

@@ -9,6 +9,44 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+<!-- LOCK SCREEN (4-digit PIN) -->
+<div id="lockScreen" class="lock hidden">
+  <div class="lockCard">
+    <div class="lockTitle">아이디드</div>
+    <div class="lockSub" id="lockSub">PIN을 입력하세요</div>
+
+    <div class="pinDots" aria-label="PIN 입력 상태">
+      <span class="dot" data-dot="0"></span>
+      <span class="dot" data-dot="1"></span>
+      <span class="dot" data-dot="2"></span>
+      <span class="dot" data-dot="3"></span>
+    </div>
+
+    <div class="pinPad" aria-label="숫자 키패드">
+      <button class="key" data-key="1">1</button>
+      <button class="key" data-key="2">2</button>
+      <button class="key" data-key="3">3</button>
+      <button class="key" data-key="4">4</button>
+      <button class="key" data-key="5">5</button>
+      <button class="key" data-key="6">6</button>
+      <button class="key" data-key="7">7</button>
+      <button class="key" data-key="8">8</button>
+      <button class="key" data-key="9">9</button>
+
+      <button class="key ghostKey" id="pinClear">지움</button>
+      <button class="key" data-key="0">0</button>
+      <button class="key ghostKey" id="pinBack">←</button>
+    </div>
+
+    <div class="lockRow">
+      <button id="pinSetBtn" class="ghost lockLink">PIN 설정/변경</button>
+      <button id="pinLockBtn" class="ghost lockLink">다시 잠그기</button>
+    </div>
+
+    <div id="lockMsg" class="lockMsg"></div>
+  </div>
+</div>
+
   <header class="top">
     <div class="brand">
       <div class="logo">I DID</div>
@@ -36,6 +74,9 @@
       <div class="divider"></div>
       <p class="muted small">
         저장은 내 기기에만 됩니다(로컬 저장). 서버/로그인 없음.
+	</p>
+	<p class="muted small">
+	Copyright © 2026 James Baek. All rights reserved.
       </p>
     </section>
 

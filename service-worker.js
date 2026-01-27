@@ -1,4 +1,4 @@
-const CACHE = "idid-v1";
+const CACHE = "idid-v2";
 const ASSETS = [
   "./",
   "./index.html",

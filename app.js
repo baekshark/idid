@@ -1,4 +1,41 @@
 // --------------------
+// 4-digit PIN Lock
+// --------------------
+const PIN = {
+  hashKey: "idid.pin.hash",
+  unlockedKey: "idid.pin.unlocked"
+};
+
+async function sha256(text){
+  const enc = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,"0")).join("");
+}
+
+function pinIsLocked(){
+  const hasHash = !!localStorage.getItem(PIN.hashKey);
+  const unlocked = sessionStorage.getItem(PIN.unlockedKey) === "1";
+  return hasHash && !unlocked;
+}
+function pinSetUnlocked(v){
+  if(v) sessionStorage.setItem(PIN.unlockedKey, "1");
+  else sessionStorage.removeItem(PIN.unlockedKey);
+}
+function pinLockUI(show){
+  const el = document.getElementById("lockScreen");
+  if(!el) return;
+  el.classList.toggle("hidden", !show);
+}
+function pinMsg(text){
+  const el = document.getElementById("lockMsg");
+  if(el) el.textContent = text || "";
+}
+function setLockSub(text){
+  const el = document.getElementById("lockSub");
+  if(el) el.textContent = text || "";
+}
+
+// --------------------
 // Utils
 // --------------------
 const pad2 = (n) => String(n).padStart(2, "0");
@@ -291,3 +328,151 @@ document.getElementById("makeDecision").addEventListener("click", ()=>{
 
 // first render
 show("home");
+pinSetUnlocked(false);
+ensurePinState();
+
+// --------------------
+// PIN UI logic
+// --------------------
+let pinBuffer = ""; // 사용자가 누른 숫자 0~4자리
+
+function renderDots(){
+  document.querySelectorAll(".dot").forEach((d, i)=>{
+    d.classList.toggle("filled", i < pinBuffer.length);
+  });
+}
+
+function resetPin(){
+  pinBuffer = "";
+  renderDots();
+}
+
+async function tryUnlockWithPin(){
+  const saved = localStorage.getItem(PIN.hashKey);
+  if(!saved){
+    pinMsg("PIN이 아직 설정되지 않았습니다. ‘PIN 설정/변경’에서 설정해 주세요.");
+    resetPin();
+    return;
+  }
+  if(pinBuffer.length !== 4) return;
+
+  const h = await sha256(pinBuffer);
+  if(h === saved){
+    pinSetUnlocked(true);
+    pinLockUI(false);
+    pinMsg("");
+    setLockSub("PIN을 입력하세요");
+    resetPin();
+  }else{
+    pinMsg("PIN이 올바르지 않습니다.");
+    // 살짝 흔들리는 느낌 대신 간단히 리셋
+    resetPin();
+  }
+}
+
+async function ensurePinState(){
+  const hasHash = !!localStorage.getItem(PIN.hashKey);
+
+  // PIN이 아직 없으면(처음)에도 잠금화면을 띄워서 "PIN 설정/변경"을 누르게 함
+  if(!hasHash){
+    pinLockUI(true);
+    pinMsg("PIN이 아직 설정되지 않았습니다. ‘PIN 설정/변경’으로 먼저 설정하세요.");
+    setLockSub("PIN을 설정하세요");
+    resetPin();
+    return;
+  }
+
+  // PIN이 설정된 이후에는 잠금 조건대로
+  if(pinIsLocked()){
+    pinLockUI(true);
+    pinMsg("");
+    setLockSub("PIN을 입력하세요");
+    resetPin();
+  }else{
+    pinLockUI(false);
+  }
+}
+
+// 키패드 숫자 누르기
+document.querySelectorAll(".key[data-key]")?.forEach(btn=>{
+  btn.addEventListener("click", async ()=>{
+    if(pinBuffer.length >= 4) return;
+    pinBuffer += btn.dataset.key;
+    renderDots();
+    if(pinBuffer.length === 4){
+      await tryUnlockWithPin();
+    }
+  });
+});
+
+// 지움(전체 삭제)
+document.getElementById("pinClear")?.addEventListener("click", ()=>{
+  pinMsg("");
+  resetPin();
+});
+
+// 백스페이스(한 칸 삭제)
+document.getElementById("pinBack")?.addEventListener("click", ()=>{
+  pinMsg("");
+  pinBuffer = pinBuffer.slice(0, -1);
+  renderDots();
+});
+
+// PIN 설정/변경
+document.getElementById("pinSetBtn")?.addEventListener("click", async ()=>{
+  const currentHash = localStorage.getItem(PIN.hashKey);
+
+  // 기존 PIN이 있으면 현재 PIN 확인
+  if(currentHash){
+    const cur = prompt("현재 PIN 4자리를 입력하세요");
+    if(cur === null) return;
+    if(!/^\d{4}$/.test(cur.trim())){
+      pinMsg("현재 PIN은 4자리 숫자여야 합니다.");
+      return;
+    }
+    const h = await sha256(cur.trim());
+    if(h !== currentHash){
+      pinMsg("현재 PIN이 올바르지 않습니다.");
+      return;
+    }
+  }
+
+  const p1 = prompt("새 PIN 4자리를 입력하세요");
+  if(p1 === null) return;
+  const p2 = prompt("한 번 더 입력하세요");
+  if(p2 === null) return;
+
+  if(!/^\d{4}$/.test(p1.trim()) || !/^\d{4}$/.test(p2.trim())){
+    pinMsg("PIN은 4자리 숫자여야 합니다.");
+    return;
+  }
+  if(p1 !== p2){
+    pinMsg("두 PIN이 일치하지 않습니다.");
+    return;
+  }
+
+  const newHash = await sha256(p1.trim());
+  localStorage.setItem(PIN.hashKey, newHash);
+  pinSetUnlocked(true);
+  pinMsg("PIN이 설정/변경되었습니다.");
+  pinLockUI(false);
+  resetPin();
+});
+
+// 다시 잠그기
+document.getElementById("pinLockBtn")?.addEventListener("click", ()=>{
+  pinSetUnlocked(false);
+  pinLockUI(true);
+  pinMsg("잠금 상태입니다.");
+  setLockSub("PIN을 입력하세요");
+  resetPin();
+});
+
+// 앱 복귀 시 잠금 상태 재확인
+document.addEventListener("visibilitychange", ()=>{
+  if(document.visibilityState === "visible"){
+    ensurePinState();
+  }
+});
+
+
