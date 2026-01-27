@@ -94,6 +94,17 @@
       font-size: 12px;
       padding: 8px 0 2px;
     }
+    .smallBtnRow button { padding:8px 10px; }
+    .warnBox{
+      border:1px solid #f0d2a1;
+      background:#fff7ea;
+      border-radius:14px;
+      padding:10px;
+      margin-top:10px;
+      color:#6b4a00;
+      font-size:12px;
+      line-height:1.4;
+    }
   </style>
 </head>
 
@@ -101,7 +112,7 @@
 <div class="wrap">
 
   <div class="row">
-    <div class="title">I_DID^^</div>
+    <div class="title">IDID^^</div>
     <span id="status" class="pill">Ready</span>
   </div>
 
@@ -187,13 +198,14 @@
       <div class="modalHeader">
         <div>
           <div class="modalTitle">설정</div>
-          <div class="muted" style="margin-top:4px;">ID/PIN 변경은 이 화면에서만 가능합니다.</div>
+          <div class="muted" style="margin-top:4px;">ID/PIN 변경 및 백업/복원은 이 화면에서 가능합니다.</div>
         </div>
         <button id="btnCloseSettings" class="modalClose" title="닫기" aria-label="닫기">✕</button>
       </div>
 
       <div class="sep"></div>
 
+      <!-- ID/PIN -->
       <div class="grid2">
         <div>
           <div class="muted">새 로그인 ID</div>
@@ -205,13 +217,38 @@
         </div>
       </div>
 
-      <div class="row" style="margin-top:12px;">
-        <button id="btnChangeAuth" class="ok">저장</button>
+      <div class="row smallBtnRow" style="margin-top:12px;">
+        <button id="btnChangeAuth" class="ok">ID/PIN 저장</button>
         <button id="btnCancelSettings">닫기</button>
         <span class="muted">로컬 저장(localStorage) 기반입니다.</span>
       </div>
 
       <div id="settingsMsg" class="muted" style="margin-top:10px;"></div>
+
+      <div class="sep"></div>
+
+      <!-- BACKUP / RESTORE -->
+      <div class="row" style="justify-content:space-between;">
+        <div>
+          <div style="font-weight:800;">백업 / 복원</div>
+          <div class="muted" style="margin-top:4px;">기록을 .json 파일로 저장하고, 나중에 다시 불러올 수 있습니다.</div>
+        </div>
+      </div>
+
+      <div class="row smallBtnRow" style="margin-top:10px;">
+        <button id="btnExport" class="ok">📦 전체 백업(.json)</button>
+        <button id="btnImportMerge">♻️ 복원(합치기)</button>
+        <button id="btnImportReplace" class="danger">♻️ 복원(덮어쓰기)</button>
+        <input id="importFile" type="file" accept="application/json,.json" class="hidden" />
+      </div>
+
+      <div class="warnBox">
+        • “합치기”는 기존 기록을 유지하면서 백업 파일의 기록을 추가/갱신합니다(같은 날짜는 최신 것으로 갱신).<br/>
+        • “덮어쓰기”는 현재 기기 안의 기록을 지우고 백업 파일 내용으로 전체 교체합니다.<br/>
+        • 백업 파일에는 기록 내용이 모두 포함됩니다. 보관 위치를 신중히 선택하십시오.
+      </div>
+
+      <div id="backupMsg" class="muted" style="margin-top:10px;"></div>
     </div>
   </div>
 
@@ -237,18 +274,23 @@
     return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
   }
 
-  // ===== Storage Keys =====
+  // ===== Storage Keys (고정) =====
   const AUTH_KEY = "idid:auth";        // {id,pin}
   const SESSION_KEY = "idid:session";  // {loggedIn:true}
+  const ENTRY_PREFIX = "idid:diary:";  // idid:diary:YYYY-MM-DD
 
-  function entryKey(dateISO){ return `idid:diary:${dateISO}`; } // {date,text,summary,updatedAt}
+  function entryKey(dateISO){ return `${ENTRY_PREFIX}${dateISO}`; } // {date,text,summary,updatedAt}
 
   // ===== Default Auth =====
   function ensureDefaultAuth(){
     const raw = localStorage.getItem(AUTH_KEY);
     if (!raw){
       localStorage.setItem(AUTH_KEY, JSON.stringify({ id: "admin", pin: "1234" }));
+      return;
     }
+    // JSON 깨진 경우에만 복구
+    try { JSON.parse(raw); }
+    catch { localStorage.setItem(AUTH_KEY, JSON.stringify({ id: "admin", pin: "1234" })); }
   }
 
   function getAuth(){
@@ -316,7 +358,7 @@
     const items = [];
     for (let i=0; i<localStorage.length; i++){
       const k = localStorage.key(i);
-      if (!k || !k.startsWith("idid:diary:")) continue;
+      if (!k || !k.startsWith(ENTRY_PREFIX)) continue;
       const raw = localStorage.getItem(k);
       try {
         const e = JSON.parse(raw);
@@ -415,8 +457,8 @@
   // ===== Settings Modal =====
   function openSettings(){
     $("settingsMsg").textContent = "";
+    $("backupMsg").textContent = "";
     $("settingsOverlay").classList.remove("hidden");
-    // focus
     setTimeout(() => { $("newId").focus(); }, 0);
   }
 
@@ -453,7 +495,6 @@
     setStatus("설정 저장");
   }
 
-  // close modal on overlay click (outside modal)
   function setupOverlayClose(){
     $("settingsOverlay").addEventListener("click", (e) => {
       if (e.target === $("settingsOverlay")) closeSettings();
@@ -463,6 +504,169 @@
         closeSettings();
       }
     });
+  }
+
+  // ===== Backup / Restore =====
+  function getAllDiaryEntries(){
+    const entries = [];
+    for (let i=0; i<localStorage.length; i++){
+      const k = localStorage.key(i);
+      if (!k || !k.startsWith(ENTRY_PREFIX)) continue;
+      const raw = localStorage.getItem(k);
+      try {
+        const e = JSON.parse(raw);
+        if (e && e.date) entries.push(e);
+      } catch {}
+    }
+    // 날짜 순으로 정렬(읽기 편하게)
+    entries.sort((a,b) => String(a.date).localeCompare(String(b.date)));
+    return entries;
+  }
+
+  function exportBackup(){
+    try {
+      const auth = getAuth();            // ID/PIN도 포함(원하시면 제외 가능)
+      const entries = getAllDiaryEntries();
+
+      const payload = {
+        meta: {
+          app: "IDID^^",
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          origin: location.origin
+        },
+        auth: auth,
+        entries: entries
+      };
+
+      const json = JSON.stringify(payload, null, 2);
+      const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+
+      const filename = `IDID_backup_${todayISO()}.json`;
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      $("backupMsg").textContent = `백업 완료: ${filename} (기록 ${entries.length}개)`;
+      setStatus("백업 완료");
+    } catch (err) {
+      console.error(err);
+      $("backupMsg").textContent = "백업 중 오류가 발생했습니다.";
+    }
+  }
+
+  function validateBackupObject(obj){
+    if (!obj || typeof obj !== "object") return false;
+    if (!obj.meta || obj.meta.app !== "IDID^^") return false;
+    if (!Array.isArray(obj.entries)) return false;
+    return true;
+  }
+
+  function clearAllDiaryEntries(){
+    const toDelete = [];
+    for (let i=0; i<localStorage.length; i++){
+      const k = localStorage.key(i);
+      if (k && k.startsWith(ENTRY_PREFIX)) toDelete.push(k);
+    }
+    toDelete.forEach(k => localStorage.removeItem(k));
+  }
+
+  // mode: "merge" | "replace"
+  function applyBackup(obj, mode){
+    if (!validateBackupObject(obj)) {
+      $("backupMsg").textContent = "이 파일은 IDID^^ 백업 파일이 아닙니다.";
+      return;
+    }
+
+    if (mode === "replace") {
+      clearAllDiaryEntries();
+    }
+
+    // auth 적용(원하면 제외 가능)
+    if (obj.auth && typeof obj.auth === "object") {
+      // 최소한의 형태만 허용
+      const id = String(obj.auth.id || "").trim();
+      const pin = String(obj.auth.pin || "").trim();
+      if (id && pin) {
+        localStorage.setItem(AUTH_KEY, JSON.stringify({ id, pin }));
+      }
+    }
+
+    // entries 적용
+    let imported = 0;
+    let updated = 0;
+
+    // 기존 엔트리 맵(업데이트 여부 판단용)
+    const existingMap = new Map();
+    for (let i=0; i<localStorage.length; i++){
+      const k = localStorage.key(i);
+      if (!k || !k.startsWith(ENTRY_PREFIX)) continue;
+      const date = k.slice(ENTRY_PREFIX.length);
+      existingMap.set(date, localStorage.getItem(k));
+    }
+
+    for (const e of obj.entries){
+      if (!e || typeof e !== "object") continue;
+      const date = String(e.date || "").trim();
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+
+      const normalized = {
+        date,
+        text: String(e.text || ""),
+        summary: String(e.summary || summarizeText(String(e.text || ""))),
+        updatedAt: String(e.updatedAt || new Date().toISOString())
+      };
+
+      const key = entryKey(date);
+      const prev = existingMap.get(date);
+
+      if (prev) updated++;
+      else imported++;
+
+      localStorage.setItem(key, JSON.stringify(normalized));
+    }
+
+    $("backupMsg").textContent =
+      (mode === "replace")
+        ? `복원(덮어쓰기) 완료: 추가 ${imported}개 / 갱신 ${updated}개`
+        : `복원(합치기) 완료: 추가 ${imported}개 / 갱신 ${updated}개`;
+
+    setStatus("복원 완료");
+
+    // 화면 즉시 반영
+    renderForDate(selectedDate);
+  }
+
+  let importMode = "merge";
+  function triggerImport(mode){
+    importMode = mode;
+    $("importFile").value = ""; // 같은 파일 재선택 가능하게
+    $("importFile").click();
+  }
+
+  function handleImportFile(file){
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const text = String(reader.result || "");
+        const obj = JSON.parse(text);
+        applyBackup(obj, importMode);
+      } catch (err) {
+        console.error(err);
+        $("backupMsg").textContent = "파일을 읽을 수 없습니다. (JSON 형식 오류)";
+      }
+    };
+    reader.onerror = () => {
+      $("backupMsg").textContent = "파일 읽기 오류가 발생했습니다.";
+    };
+    reader.readAsText(file, "utf-8");
   }
 
   // ===== Events =====
@@ -496,6 +700,12 @@
   $("btnCloseSettings").addEventListener("click", closeSettings);
   $("btnCancelSettings").addEventListener("click", closeSettings);
   $("btnChangeAuth").addEventListener("click", changeAuth);
+
+  // Backup/Restore buttons
+  $("btnExport").addEventListener("click", exportBackup);
+  $("btnImportMerge").addEventListener("click", () => triggerImport("merge"));
+  $("btnImportReplace").addEventListener("click", () => triggerImport("replace"));
+  $("importFile").addEventListener("change", (e) => handleImportFile(e.target.files && e.target.files[0]));
 
   // ===== Boot =====
   (function boot(){
