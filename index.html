@@ -3,161 +3,514 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>아이디드 (I DID)</title>
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#111111" />
-  <link rel="stylesheet" href="styles.css" />
+  <title>IDID^^</title>
+
+  <style>
+    :root {
+      --b:#e6e6e6; --t:#111; --m:#666; --bg:#fafafa;
+      --shadow: 0 1px 0 rgba(0,0,0,0.03);
+    }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      margin: 18px; background: var(--bg); color: var(--t);
+    }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .card {
+      background:#fff; border:1px solid var(--b); border-radius:16px;
+      padding:14px; margin-top:12px; box-shadow: var(--shadow);
+    }
+    .title { font-weight:900; font-size:22px; letter-spacing:0.2px; }
+    .muted { color: var(--m); font-size:12px; }
+    .pill {
+      display:inline-block; padding:4px 10px; border-radius:999px;
+      background:#f2f2f2; font-size:12px;
+    }
+    .sep { height:1px; background: var(--b); margin: 10px 0; }
+
+    input, textarea { font-size:14px; }
+    input[type="text"], input[type="password"]{
+      padding:10px; border-radius:12px; border:1px solid var(--b);
+      outline:none; width: 240px; box-sizing:border-box;
+    }
+    input[type="date"]{
+      padding:10px; border-radius:12px; border:1px solid var(--b);
+      outline:none;
+    }
+    textarea{
+      width:100%; min-height: 280px;
+      padding:12px; border-radius:14px; border:1px solid var(--b);
+      box-sizing:border-box; outline:none;
+    }
+    button{
+      padding:10px 12px; border-radius:12px;
+      border:1px solid #bbb; background:#fff; cursor:pointer;
+      white-space:nowrap;
+    }
+    button:hover{ background:#f6f6f6; }
+    .ok{ border-color:#b7e3c5; }
+    .ok:hover{ background:#f2fff6; }
+    .danger{ border-color:#f0b1b1; }
+    .danger:hover{ background:#fff3f3; }
+
+    .hidden{ display:none !important; }
+    .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    @media (max-width: 760px){
+      .grid2{ grid-template-columns:1fr; }
+      input[type="text"], input[type="password"]{ width:100%; }
+    }
+    .summaryBox{
+      font-size:14px; line-height:1.45; white-space:pre-wrap;
+    }
+
+    /* Settings modal */
+    .overlay{
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35);
+      display:flex; align-items:center; justify-content:center;
+      padding: 16px; z-index: 9999;
+    }
+    .modal{
+      width: min(760px, 100%);
+      background:#fff; border:1px solid var(--b);
+      border-radius:18px; padding:14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+    }
+    .modalHeader{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .modalTitle{ font-weight:900; font-size:16px; }
+    .modalClose{
+      border-radius: 999px;
+      width: 38px; height: 38px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight: 900;
+    }
+
+    .footer{
+      margin-top: 18px;
+      text-align:center;
+      color: var(--m);
+      font-size: 12px;
+      padding: 8px 0 2px;
+    }
+  </style>
 </head>
+
 <body>
-<!-- LOCK SCREEN (4-digit PIN) -->
-<div id="lockScreen" class="lock hidden">
-  <div class="lockCard">
-    <div class="lockTitle">아이디드</div>
-    <div class="lockSub" id="lockSub">PIN을 입력하세요</div>
+<div class="wrap">
 
-    <div class="pinDots" aria-label="PIN 입력 상태">
-      <span class="dot" data-dot="0"></span>
-      <span class="dot" data-dot="1"></span>
-      <span class="dot" data-dot="2"></span>
-      <span class="dot" data-dot="3"></span>
-    </div>
-
-    <div class="pinPad" aria-label="숫자 키패드">
-      <button class="key" data-key="1">1</button>
-      <button class="key" data-key="2">2</button>
-      <button class="key" data-key="3">3</button>
-      <button class="key" data-key="4">4</button>
-      <button class="key" data-key="5">5</button>
-      <button class="key" data-key="6">6</button>
-      <button class="key" data-key="7">7</button>
-      <button class="key" data-key="8">8</button>
-      <button class="key" data-key="9">9</button>
-
-      <button class="key ghostKey" id="pinClear">지움</button>
-      <button class="key" data-key="0">0</button>
-      <button class="key ghostKey" id="pinBack">←</button>
-    </div>
-
-    <div class="lockRow">
-      <button id="pinSetBtn" class="ghost lockLink">PIN 설정/변경</button>
-      <button id="pinLockBtn" class="ghost lockLink">다시 잠그기</button>
-    </div>
-
-    <div id="lockMsg" class="lockMsg"></div>
+  <div class="row">
+    <div class="title">I_DID^^</div>
+    <span id="status" class="pill">Ready</span>
   </div>
+
+  <!-- AUTH SCREEN -->
+  <div id="authScreen" class="card">
+    <div class="muted">Security Check</div>
+    <div style="font-weight:800; font-size:16px; margin-top:6px;">ID + PIN 입력</div>
+
+    <div class="sep"></div>
+
+    <div class="grid2">
+      <div>
+        <div class="muted">ID</div>
+        <input id="idInput" type="text" placeholder="예: admin" autocomplete="username" />
+      </div>
+      <div>
+        <div class="muted">PIN (4~8자리 숫자)</div>
+        <input id="pinInput" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="예: 1234" autocomplete="current-password" />
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:12px;">
+      <button id="btnLogin" class="ok">로그인</button>
+      <span class="muted">초기값: ID=admin / PIN=1234</span>
+    </div>
+
+    <div id="authError" class="muted" style="margin-top:10px; color:#b00020;"></div>
+  </div>
+
+  <!-- APP SCREEN -->
+  <div id="appScreen" class="hidden">
+
+    <div class="card">
+      <div class="row">
+        <div>
+          <div class="muted">날짜 선택 (달력 클릭)</div>
+          <input id="datePicker" type="date" />
+        </div>
+
+        <div>
+          <div class="muted">선택된 날짜</div>
+          <div id="selectedDateLabel" style="font-weight:900;">-</div>
+        </div>
+
+        <div style="margin-left:auto" class="row">
+          <button id="btnToday">오늘</button>
+          <button id="btnSave" class="ok">저장</button>
+          <button id="btnDelete" class="danger">이 날짜 기록 삭제</button>
+          <button id="btnOpenSettings">설정</button>
+          <button id="btnLogout">로그아웃</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between;">
+        <div style="flex: 1 1 480px;">
+          <div class="muted">자동 요약 (1~2줄)</div>
+          <div id="summaryBox" class="summaryBox" style="margin-top:6px;">-</div>
+          <div id="updatedAt" class="muted" style="margin-top:8px;"></div>
+        </div>
+
+        <div style="min-width:240px;">
+          <div class="muted">최근 기록 (클릭하면 이동)</div>
+          <div id="recentList" style="margin-top:6px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="muted">본문</div>
+      <textarea id="textArea" placeholder="이 날짜의 기록을 작성하십시오."></textarea>
+      <div class="muted" style="margin-top:8px;">
+        저장을 누르면 날짜별로 저장되며, 달력에서 과거 날짜를 선택하면 자동으로 불러옵니다.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SETTINGS MODAL (hidden by default) -->
+  <div id="settingsOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-label="설정">
+    <div class="modal">
+      <div class="modalHeader">
+        <div>
+          <div class="modalTitle">설정</div>
+          <div class="muted" style="margin-top:4px;">ID/PIN 변경은 이 화면에서만 가능합니다.</div>
+        </div>
+        <button id="btnCloseSettings" class="modalClose" title="닫기" aria-label="닫기">✕</button>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="grid2">
+        <div>
+          <div class="muted">새 로그인 ID</div>
+          <input id="newId" type="text" placeholder="새 ID" />
+        </div>
+        <div>
+          <div class="muted">새 PIN (4~8자리 숫자)</div>
+          <input id="newPin" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="새 PIN" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <button id="btnChangeAuth" class="ok">저장</button>
+        <button id="btnCancelSettings">닫기</button>
+        <span class="muted">로컬 저장(localStorage) 기반입니다.</span>
+      </div>
+
+      <div id="settingsMsg" class="muted" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <!-- FOOTER COPYRIGHT -->
+  <div class="footer">
+    © <span id="yearNow"></span> James Baek. All rights reserved.
+  </div>
+
 </div>
 
-  <header class="top">
-    <div class="brand">
-      <div class="logo">I DID</div>
-      <div class="sub" id="todayText"></div>
-    </div>
-    <button class="ghost" id="installBtn" hidden>설치</button>
-  </header>
+<script>
+  // ===== Helpers =====
+  const $ = (id) => document.getElementById(id);
 
-  <main class="wrap">
-    <nav class="tabs">
-      <button class="tab active" data-view="home">홈</button>
-      <button class="tab" data-view="log">오늘 기록</button>
-      <button class="tab" data-view="summary">오늘 요약</button>
-      <button class="tab" data-view="decide">결정 도우미</button>
-    </nav>
+  function setStatus(msg){
+    $("status").textContent = msg;
+    setTimeout(() => { $("status").textContent = "Ready"; }, 1200);
+  }
 
-    <!-- HOME -->
-    <section class="card view" id="view-home">
-      <h1>아이디드</h1>
-      <p class="muted">혼자 쓰는 기록 & 결정 도우미</p>
-      <div class="grid2">
-        <button class="primary" id="goLog">오늘 기록하기</button>
-        <button class="primary" id="goDecide">결정 도우미</button>
-      </div>
-      <div class="divider"></div>
-      <p class="muted small">
-        저장은 내 기기에만 됩니다(로컬 저장). 서버/로그인 없음.
-	</p>
-	<p class="muted small">
-	Copyright © 2026 James Baek. All rights reserved.
-      </p>
-    </section>
+  function pad2(n){ return String(n).padStart(2, "0"); }
+  function todayISO(){
+    const d = new Date();
+    return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+  }
 
-    <!-- LOG -->
-    <section class="card view hidden" id="view-log">
-      <h2>오늘 기록</h2>
-      <div class="row">
-        <textarea id="logInput" placeholder="지금 떠오른 걸 그냥 적어보세요" rows="3"></textarea>
-        <button class="primary" id="addLog">기록하기</button>
-      </div>
-      <div class="divider"></div>
-      <div class="row between">
-        <div class="muted small" id="logCount"></div>
-        <button class="ghost" id="clearToday">오늘 기록 삭제</button>
-      </div>
-      <ul class="list" id="logList"></ul>
-    </section>
+  // ===== Storage Keys =====
+  const AUTH_KEY = "idid:auth";        // {id,pin}
+  const SESSION_KEY = "idid:session";  // {loggedIn:true}
 
-    <!-- SUMMARY -->
-    <section class="card view hidden" id="view-summary">
-      <h2>오늘 요약</h2>
-      <p class="muted">지금은 규칙 기반 요약(2단계에서 AI 요약 추가)</p>
+  function entryKey(dateISO){ return `idid:diary:${dateISO}`; } // {date,text,summary,updatedAt}
 
-      <div class="summaryBox">
-        <div class="label">오늘의 한 줄</div>
-        <div class="big" id="sumOneLine">-</div>
+  // ===== Default Auth =====
+  function ensureDefaultAuth(){
+    const raw = localStorage.getItem(AUTH_KEY);
+    if (!raw){
+      localStorage.setItem(AUTH_KEY, JSON.stringify({ id: "admin", pin: "1234" }));
+    }
+  }
 
-        <div class="grid3">
-          <div class="pill">
-            <div class="label">키워드</div>
-            <div id="sumKeywords">-</div>
-          </div>
-          <div class="pill">
-            <div class="label">기분</div>
-            <div id="sumMood">-</div>
-          </div>
-          <div class="pill">
-            <div class="label">기록 수</div>
-            <div id="sumCount">-</div>
-          </div>
-        </div>
+  function getAuth(){
+    try { return JSON.parse(localStorage.getItem(AUTH_KEY) || "{}"); }
+    catch { return {}; }
+  }
 
-        <div class="divider"></div>
-        <button class="primary" id="rebuildSummary">요약 만들기</button>
-      </div>
-    </section>
+  function setSession(loggedIn){
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ loggedIn: !!loggedIn }));
+  }
 
-    <!-- DECIDE -->
-    <section class="card view hidden" id="view-decide">
-      <h2>결정 도우미</h2>
-      <div class="row">
-        <textarea id="qInput" placeholder="예) 오늘 헬스를 갈까요, 쉴까요?" rows="3"></textarea>
-        <button class="primary" id="makeDecision">결정 보기</button>
-      </div>
+  function getSession(){
+    try { return JSON.parse(localStorage.getItem(SESSION_KEY) || "{}"); }
+    catch { return {}; }
+  }
 
-      <div class="divider"></div>
+  // ===== Summary (local heuristic 1~2 lines) =====
+  function summarizeText(text){
+    const cleaned = (text || "")
+      .replace(/\r/g, "")
+      .replace(/[ \t]+/g, " ")
+      .trim();
 
-      <div class="decision hidden" id="decisionBox">
-        <div class="label">추천</div>
-        <div class="big" id="dSuggestion">-</div>
+    if (!cleaned) return "";
 
-        <div class="grid2">
-          <div class="pill">
-            <div class="label">장점</div>
-            <ul id="dPros" class="miniList"></ul>
-          </div>
-          <div class="pill">
-            <div class="label">단점</div>
-            <ul id="dCons" class="miniList"></ul>
-          </div>
-        </div>
+    const sentences = cleaned
+      .replace(/\n+/g, " ")
+      .split(/(?<=[\.\!\?。]|다\.|요\.|함\.|임\.)\s+|(?<=\.)\s+|(?<=\!)\s+|(?<=\?)\s+/g)
+      .map(s => s.trim())
+      .filter(s => s.length >= 6);
 
-        <p class="muted small">최종 선택은 언제나 James님입니다.</p>
-      </div>
-    </section>
-  </main>
+    let summary = "";
+    if (sentences.length) summary = sentences.slice(0, 2).join(" ").trim();
+    else summary = cleaned.split("\n").map(s => s.trim()).filter(Boolean).slice(0,2).join(" ").trim();
 
-  <footer class="foot muted small">
-    I DID · offline-ready PWA
-  </footer>
+    const MAX = 160;
+    if (summary.length > MAX) summary = summary.slice(0, MAX).trim() + "…";
+    return summary;
+  }
 
-  <script src="app.js"></script>
+  // ===== Entry CRUD =====
+  function loadEntry(dateISO){
+    const raw = localStorage.getItem(entryKey(dateISO));
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch { return null; }
+  }
+
+  function saveEntry(dateISO, text){
+    const entry = {
+      date: dateISO,
+      text: text || "",
+      summary: summarizeText(text),
+      updatedAt: new Date().toISOString()
+    };
+    localStorage.setItem(entryKey(dateISO), JSON.stringify(entry));
+    return entry;
+  }
+
+  function deleteEntry(dateISO){
+    localStorage.removeItem(entryKey(dateISO));
+  }
+
+  // ===== Recent Entries List =====
+  function listRecentEntries(limit=10){
+    const items = [];
+    for (let i=0; i<localStorage.length; i++){
+      const k = localStorage.key(i);
+      if (!k || !k.startsWith("idid:diary:")) continue;
+      const raw = localStorage.getItem(k);
+      try {
+        const e = JSON.parse(raw);
+        if (e && e.date) items.push(e);
+      } catch {}
+    }
+    items.sort((a,b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")));
+    return items.slice(0, limit);
+  }
+
+  function renderRecent(){
+    const box = $("recentList");
+    box.innerHTML = "";
+    const list = listRecentEntries(10);
+
+    if (!list.length){
+      box.innerHTML = `<div class="muted">(최근 기록 없음)</div>`;
+      return;
+    }
+
+    list.forEach(e => {
+      const btn = document.createElement("button");
+      btn.style.display = "block";
+      btn.style.width = "100%";
+      btn.style.marginBottom = "6px";
+      btn.textContent = e.date;
+      btn.addEventListener("click", () => {
+        renderForDate(e.date);
+        setStatus("이동");
+      });
+      box.appendChild(btn);
+    });
+  }
+
+  // ===== Screen Control =====
+  function showAuth(){
+    $("authScreen").classList.remove("hidden");
+    $("appScreen").classList.add("hidden");
+  }
+
+  function showApp(){
+    $("authScreen").classList.add("hidden");
+    $("appScreen").classList.remove("hidden");
+  }
+
+  // ===== App Rendering =====
+  let selectedDate = todayISO();
+
+  function renderForDate(dateISO){
+    selectedDate = dateISO;
+    $("datePicker").value = dateISO;
+    $("selectedDateLabel").textContent = dateISO;
+
+    const entry = loadEntry(dateISO);
+    if (entry){
+      $("textArea").value = entry.text || "";
+      $("summaryBox").textContent = entry.summary ? entry.summary : "(요약 없음)";
+      $("updatedAt").textContent = `마지막 저장: ${entry.updatedAt}`;
+    } else {
+      $("textArea").value = "";
+      $("summaryBox").textContent = "(기록 없음)";
+      $("updatedAt").textContent = "";
+    }
+    renderRecent();
+  }
+
+  // ===== Auth =====
+  function login(){
+    const id = ($("idInput").value || "").trim();
+    const pin = ($("pinInput").value || "").trim();
+    const auth = getAuth();
+
+    if (!id || !pin){
+      $("authError").textContent = "ID와 PIN을 입력하십시오.";
+      return;
+    }
+    if (id === auth.id && pin === auth.pin){
+      $("authError").textContent = "";
+      setSession(true);
+      showApp();
+      renderForDate(todayISO());
+      setStatus("로그인 성공");
+    } else {
+      $("authError").textContent = "ID 또는 PIN이 올바르지 않습니다.";
+    }
+  }
+
+  function logout(){
+    setSession(false);
+    $("idInput").value = "";
+    $("pinInput").value = "";
+    showAuth();
+    setStatus("로그아웃");
+  }
+
+  // ===== Settings Modal =====
+  function openSettings(){
+    $("settingsMsg").textContent = "";
+    $("settingsOverlay").classList.remove("hidden");
+    // focus
+    setTimeout(() => { $("newId").focus(); }, 0);
+  }
+
+  function closeSettings(){
+    $("settingsOverlay").classList.add("hidden");
+  }
+
+  function changeAuth(){
+    const newId = ($("newId").value || "").trim();
+    const newPin = ($("newPin").value || "").trim();
+
+    if (!newId && !newPin){
+      $("settingsMsg").textContent = "변경할 ID 또는 PIN을 입력하십시오.";
+      return;
+    }
+
+    const current = getAuth();
+    const updated = { ...current };
+
+    if (newId) updated.id = newId;
+
+    if (newPin){
+      if (!/^\d{4,8}$/.test(newPin)){
+        $("settingsMsg").textContent = "PIN은 4~8자리 숫자만 가능합니다.";
+        return;
+      }
+      updated.pin = newPin;
+    }
+
+    localStorage.setItem(AUTH_KEY, JSON.stringify(updated));
+    $("newId").value = "";
+    $("newPin").value = "";
+    $("settingsMsg").textContent = "저장되었습니다.";
+    setStatus("설정 저장");
+  }
+
+  // close modal on overlay click (outside modal)
+  function setupOverlayClose(){
+    $("settingsOverlay").addEventListener("click", (e) => {
+      if (e.target === $("settingsOverlay")) closeSettings();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !$("settingsOverlay").classList.contains("hidden")){
+        closeSettings();
+      }
+    });
+  }
+
+  // ===== Events =====
+  $("btnLogin").addEventListener("click", login);
+  $("pinInput").addEventListener("keydown", (e) => { if (e.key === "Enter") login(); });
+  $("idInput").addEventListener("keydown", (e) => { if (e.key === "Enter") $("pinInput").focus(); });
+
+  $("btnLogout").addEventListener("click", logout);
+
+  $("datePicker").addEventListener("change", (e) => {
+    if (e.target.value) renderForDate(e.target.value);
+  });
+
+  $("btnToday").addEventListener("click", () => renderForDate(todayISO()));
+
+  $("btnSave").addEventListener("click", () => {
+    const entry = saveEntry(selectedDate, $("textArea").value);
+    $("summaryBox").textContent = entry.summary ? entry.summary : "(요약 없음)";
+    $("updatedAt").textContent = `마지막 저장: ${entry.updatedAt}`;
+    renderRecent();
+    setStatus("저장 완료");
+  });
+
+  $("btnDelete").addEventListener("click", () => {
+    deleteEntry(selectedDate);
+    renderForDate(selectedDate);
+    setStatus("삭제 완료");
+  });
+
+  $("btnOpenSettings").addEventListener("click", openSettings);
+  $("btnCloseSettings").addEventListener("click", closeSettings);
+  $("btnCancelSettings").addEventListener("click", closeSettings);
+  $("btnChangeAuth").addEventListener("click", changeAuth);
+
+  // ===== Boot =====
+  (function boot(){
+    $("yearNow").textContent = String(new Date().getFullYear());
+    ensureDefaultAuth();
+    setupOverlayClose();
+
+    const session = getSession();
+    if (session.loggedIn){
+      showApp();
+      renderForDate(todayISO());
+    } else {
+      showAuth();
+    }
+  })();
+</script>
 </body>
 </html>
