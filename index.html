@@ -273,7 +273,17 @@
     const d = new Date();
     return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
   }
-
+function formatLocalTime(iso){
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleString("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
   // ===== Storage Keys (고정) =====
   const AUTH_KEY = "idid:auth";        // {id,pin}
   const SESSION_KEY = "idid:session";  // {loggedIn:true}
@@ -416,7 +426,8 @@
     if (entry){
       $("textArea").value = entry.text || "";
       $("summaryBox").textContent = entry.summary ? entry.summary : "(요약 없음)";
-      $("updatedAt").textContent = `마지막 저장: ${entry.updatedAt}`;
+      $("updatedAt").textContent = `마지막 저장: ${formatLocalTime(entry.updatedAt)}`;
+
     } else {
       $("textArea").value = "";
       $("summaryBox").textContent = "(기록 없음)";
@@ -685,7 +696,7 @@
   $("btnSave").addEventListener("click", () => {
     const entry = saveEntry(selectedDate, $("textArea").value);
     $("summaryBox").textContent = entry.summary ? entry.summary : "(요약 없음)";
-    $("updatedAt").textContent = `마지막 저장: ${entry.updatedAt}`;
+    $("updatedAt").textContent = `마지막 저장: ${formatLocalTime(entry.updatedAt)}`;
     renderRecent();
     setStatus("저장 완료");
   });
