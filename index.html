@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>아이디드 (I DID)</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#111111" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <div class="logo">I DID</div>
+      <div class="sub" id="todayText"></div>
+    </div>
+    <button class="ghost" id="installBtn" hidden>설치</button>
+  </header>
+
+  <main class="wrap">
+    <nav class="tabs">
+      <button class="tab active" data-view="home">홈</button>
+      <button class="tab" data-view="log">오늘 기록</button>
+      <button class="tab" data-view="summary">오늘 요약</button>
+      <button class="tab" data-view="decide">결정 도우미</button>
+    </nav>
+
+    <!-- HOME -->
+    <section class="card view" id="view-home">
+      <h1>아이디드</h1>
+      <p class="muted">혼자 쓰는 기록 & 결정 도우미</p>
+      <div class="grid2">
+        <button class="primary" id="goLog">오늘 기록하기</button>
+        <button class="primary" id="goDecide">결정 도우미</button>
+      </div>
+      <div class="divider"></div>
+      <p class="muted small">
+        저장은 내 기기에만 됩니다(로컬 저장). 서버/로그인 없음.
+      </p>
+    </section>
+
+    <!-- LOG -->
+    <section class="card view hidden" id="view-log">
+      <h2>오늘 기록</h2>
+      <div class="row">
+        <textarea id="logInput" placeholder="지금 떠오른 걸 그냥 적어보세요" rows="3"></textarea>
+        <button class="primary" id="addLog">기록하기</button>
+      </div>
+      <div class="divider"></div>
+      <div class="row between">
+        <div class="muted small" id="logCount"></div>
+        <button class="ghost" id="clearToday">오늘 기록 삭제</button>
+      </div>
+      <ul class="list" id="logList"></ul>
+    </section>
+
+    <!-- SUMMARY -->
+    <section class="card view hidden" id="view-summary">
+      <h2>오늘 요약</h2>
+      <p class="muted">지금은 규칙 기반 요약(2단계에서 AI 요약 추가)</p>
+
+      <div class="summaryBox">
+        <div class="label">오늘의 한 줄</div>
+        <div class="big" id="sumOneLine">-</div>
+
+        <div class="grid3">
+          <div class="pill">
+            <div class="label">키워드</div>
+            <div id="sumKeywords">-</div>
+          </div>
+          <div class="pill">
+            <div class="label">기분</div>
+            <div id="sumMood">-</div>
+          </div>
+          <div class="pill">
+            <div class="label">기록 수</div>
+            <div id="sumCount">-</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <button class="primary" id="rebuildSummary">요약 만들기</button>
+      </div>
+    </section>
+
+    <!-- DECIDE -->
+    <section class="card view hidden" id="view-decide">
+      <h2>결정 도우미</h2>
+      <div class="row">
+        <textarea id="qInput" placeholder="예) 오늘 헬스를 갈까요, 쉴까요?" rows="3"></textarea>
+        <button class="primary" id="makeDecision">결정 보기</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="decision hidden" id="decisionBox">
+        <div class="label">추천</div>
+        <div class="big" id="dSuggestion">-</div>
+
+        <div class="grid2">
+          <div class="pill">
+            <div class="label">장점</div>
+            <ul id="dPros" class="miniList"></ul>
+          </div>
+          <div class="pill">
+            <div class="label">단점</div>
+            <ul id="dCons" class="miniList"></ul>
+          </div>
+        </div>
+
+        <p class="muted small">최종 선택은 언제나 James님입니다.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot muted small">
+    I DID · offline-ready PWA
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
