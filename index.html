@@ -1,0 +1,1101 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>IDID^^</title>
+
+  <style>
+    :root {
+      --b: #e6e6e6;
+      --t: #111;
+      --m: #666;
+      --bg: #fafafa;
+      --shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
+    }
+
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      margin: 18px;
+      background: var(--bg);
+      color: var(--t);
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--b);
+      border-radius: 16px;
+      padding: 14px;
+      margin-top: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .title {
+      font-weight: 900;
+      font-size: 22px;
+      letter-spacing: 0.2px;
+    }
+
+    .muted {
+      color: var(--m);
+      font-size: 12px;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #f2f2f2;
+      font-size: 12px;
+    }
+
+    .sep {
+      height: 1px;
+      background: var(--b);
+      margin: 10px 0;
+    }
+
+    input,
+    textarea {
+      font-size: 14px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid var(--b);
+      outline: none;
+      width: 240px;
+      box-sizing: border-box;
+    }
+
+    input[type="date"] {
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid var(--b);
+      outline: none;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 280px;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--b);
+      box-sizing: border-box;
+      outline: none;
+    }
+
+    button {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #bbb;
+      background: #fff;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      background: #f6f6f6;
+    }
+
+    .ok {
+      border-color: #b7e3c5;
+    }
+
+    .ok:hover {
+      background: #f2fff6;
+    }
+
+    .danger {
+      border-color: #f0b1b1;
+    }
+
+    .danger:hover {
+      background: #fff3f3;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 760px) {
+      .grid2 {
+        grid-template-columns: 1fr;
+      }
+
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+      }
+    }
+
+    .summaryBox {
+      font-size: 14px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    /* Settings modal */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 9999;
+    }
+
+    .modal {
+      width: min(760px, 100%);
+      background: #fff;
+      border: 1px solid var(--b);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+    }
+
+    .modalHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .modalTitle {
+      font-weight: 900;
+      font-size: 16px;
+    }
+
+    .modalClose {
+      border-radius: 999px;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+    }
+
+    .footer {
+      margin-top: 18px;
+      text-align: center;
+      color: var(--m);
+      font-size: 12px;
+      padding: 8px 0 2px;
+    }
+
+    .smallBtnRow button {
+      padding: 8px 10px;
+    }
+
+    .warnBox {
+      border: 1px solid #f0d2a1;
+      background: #fff7ea;
+      border-radius: 14px;
+      padding: 10px;
+      margin-top: 10px;
+      color: #6b4a00;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    /* Calendar */
+    .calGrid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+
+    .calHead {
+      text-align: center;
+      font-size: 11px;
+      color: var(--m);
+      padding: 6px 0;
+    }
+
+    .calDay {
+      border: 1px solid var(--b);
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px 0;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      position: relative;
+      user-select: none;
+    }
+
+    .calDay:hover {
+      background: #f6f6f6;
+    }
+
+    .calDay.disabled {
+      opacity: .35;
+      cursor: default;
+    }
+
+    .calDay.hasEntry::after {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #111;
+      position: absolute;
+      left: 50%;
+      bottom: 6px;
+      transform: translateX(-50%);
+    }
+
+    .calDay.selected {
+      outline: 2px solid #111;
+      background: #f2f2f2;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <div class="row">
+      <div class="title">IDID^^</div>
+      <span id="status" class="pill">Ready</span>
+    </div>
+
+    <!-- AUTH SCREEN -->
+    <div id="authScreen" class="card">
+      <div class="muted">Security Check</div>
+      <div style="font-weight:800; font-size:16px; margin-top:6px;">ID + PIN 입력</div>
+
+      <div class="sep"></div>
+
+      <div class="grid2">
+        <div>
+          <div class="muted">ID</div>
+          <input id="idInput" type="text" placeholder="예: admin" autocomplete="username" />
+        </div>
+        <div>
+          <div class="muted">PIN (4~8자리 숫자)</div>
+          <input id="pinInput" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="예: 1234"
+            autocomplete="current-password" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <button id="btnLogin" class="ok">로그인</button>
+        <span class="muted">초기값: ID=admin / PIN=1234</span>
+      </div>
+
+      <div id="authError" class="muted" style="margin-top:10px; color:#b00020;"></div>
+    </div>
+
+    <!-- APP SCREEN -->
+    <div id="appScreen" class="hidden">
+
+      <div class="card">
+        <div class="row">
+          <div>
+            <div class="muted">날짜 선택 (달력 클릭)</div>
+            <input id="datePicker" type="date" />
+          </div>
+
+          <div>
+            <div class="muted">선택된 날짜</div>
+            <div id="selectedDateLabel" style="font-weight:900;">-</div>
+          </div>
+
+          <div style="margin-left:auto" class="row">
+            <button id="btnToday">오늘</button>
+            <button id="btnSave" class="ok">저장</button>
+            <button id="btnDelete" class="danger">이 날짜 기록 삭제</button>
+            <button id="btnOpenSettings">설정</button>
+            <button id="btnLogout">로그아웃</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between;">
+          <div style="flex: 1 1 480px;">
+            <div class="muted">자동 요약 (1~2줄)</div>
+            <div id="summaryBox" class="summaryBox" style="margin-top:6px;">-</div>
+            <div id="updatedAt" class="muted" style="margin-top:8px;"></div>
+          </div>
+
+          <div style="min-width:240px;">
+            <div class="muted">최근 기록 (클릭하면 이동)</div>
+            <div style="min-width:240px;">
+              <div class="muted">월 달력 (날짜 클릭)</div>
+
+              <div class="row" style="gap:8px; margin-top:8px;">
+                <select id="yearSelect"></select>
+                <select id="monthSelect"></select>
+              </div>
+
+              <div id="monthLabel" class="muted" style="margin-top:8px;"></div>
+              <div id="calendar" style="margin-top:8px;"></div>
+
+              <div class="muted" style="margin-top:8px; font-size:11px;">
+                • 기록이 있는 날짜는 표시가 됩니다.<br />
+                • 날짜를 누르면 해당 기록으로 이동합니다.
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="muted">본문</div>
+        <textarea id="textArea" placeholder="이 날짜의 기록을 작성하십시오."></textarea>
+        <div class="muted" style="margin-top:8px;">
+          저장을 누르면 날짜별로 저장되며, 달력에서 과거 날짜를 선택하면 자동으로 불러옵니다.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SETTINGS MODAL (hidden by default) -->
+    <div id="settingsOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-label="설정">
+      <div class="modal">
+        <div class="modalHeader">
+          <div>
+            <div class="modalTitle">설정</div>
+            <div class="muted" style="margin-top:4px;">ID/PIN 변경 및 백업/복원은 이 화면에서 가능합니다.</div>
+          </div>
+          <button id="btnCloseSettings" class="modalClose" title="닫기" aria-label="닫기">✕</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <!-- ID/PIN -->
+        <div class="grid2">
+          <div>
+            <div class="muted">새 로그인 ID</div>
+            <input id="newId" type="text" placeholder="새 ID" />
+          </div>
+          <div>
+            <div class="muted">새 PIN (4~8자리 숫자)</div>
+            <input id="newPin" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="새 PIN" />
+          </div>
+        </div>
+
+        <div class="row smallBtnRow" style="margin-top:12px;">
+          <button id="btnChangeAuth" class="ok">ID/PIN 저장</button>
+          <button id="btnCancelSettings">닫기</button>
+          <span class="muted">로컬 저장(localStorage) 기반입니다.</span>
+        </div>
+
+        <div id="settingsMsg" class="muted" style="margin-top:10px;"></div>
+
+        <div class="sep"></div>
+
+        <!-- BACKUP / RESTORE -->
+        <div class="row" style="justify-content:space-between;">
+          <div>
+            <div style="font-weight:800;">백업 / 복원</div>
+            <div class="muted" style="margin-top:4px;">기록을 .json 파일로 저장하고, 나중에 다시 불러올 수 있습니다.</div>
+          </div>
+        </div>
+
+        <div class="row smallBtnRow" style="margin-top:10px;">
+          <button id="btnExport" class="ok">📦 전체 백업(.json)</button>
+          <button id="btnImportMerge">♻️ 복원(합치기)</button>
+          <button id="btnImportReplace" class="danger">♻️ 복원(덮어쓰기)</button>
+          <input id="importFile" type="file" accept="application/json,.json" class="hidden" />
+        </div>
+
+        <div class="warnBox">
+          • “합치기”는 기존 기록을 유지하면서 백업 파일의 기록을 추가/갱신합니다(같은 날짜는 최신 것으로 갱신).<br />
+          • “덮어쓰기”는 현재 기기 안의 기록을 지우고 백업 파일 내용으로 전체 교체합니다.<br />
+          • 백업 파일에는 기록 내용이 모두 포함됩니다. 보관 위치를 신중히 선택하십시오.
+        </div>
+
+        <div id="backupMsg" class="muted" style="margin-top:10px;"></div>
+      </div>
+    </div>
+
+    <!-- FOOTER COPYRIGHT -->
+    <div class="footer">
+      © <span id="yearNow"></span> James Baek. All rights reserved.
+    </div>
+
+  </div>
+
+  <script>
+    // ===== Helpers =====
+    const $ = (id) => document.getElementById(id);
+
+    function setStatus(msg) {
+      $("status").textContent = msg;
+      setTimeout(() => { $("status").textContent = "Ready"; }, 1200);
+    }
+
+    function pad2(n) { return String(n).padStart(2, "0"); }
+    function todayISO() {
+      const d = new Date();
+      return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    }
+    function formatLocalTime(iso) {
+      if (!iso) return "";
+      const d = new Date(iso);
+      return d.toLocaleString("ko-KR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+    // ===== Storage Keys (고정) =====
+    const AUTH_KEY = "idid:auth";        // {id,pin}
+    const SESSION_KEY = "idid:session";  // {loggedIn:true}
+    const ENTRY_PREFIX = "idid:diary:";  // idid:diary:YYYY-MM-DD
+
+    function entryKey(dateISO) { return `${ENTRY_PREFIX}${dateISO}`; } // {date,text,summary,updatedAt}
+
+    // ===== Default Auth =====
+    function ensureDefaultAuth() {
+      const raw = localStorage.getItem(AUTH_KEY);
+      if (!raw) {
+        localStorage.setItem(AUTH_KEY, JSON.stringify({ id: "admin", pin: "1234" }));
+        return;
+      }
+      // JSON 깨진 경우에만 복구
+      try { JSON.parse(raw); }
+      catch { localStorage.setItem(AUTH_KEY, JSON.stringify({ id: "admin", pin: "1234" })); }
+    }
+
+    function daysInMonth(year, month1to12) {
+      return new Date(year, month1to12, 0).getDate(); // month=1..12
+    }
+    function weekdayOf(year, month1to12, day) {
+      return new Date(year, month1to12 - 1, day).getDay(); // 0=Sun
+    }
+    function ymd(year, month1to12, day) {
+      return `${year}-${pad2(month1to12)}-${pad2(day)}`;
+    }
+
+    function getEntryDateSet() {
+      // localStorage에서 기록이 있는 날짜를 Set으로 모음
+      const set = new Set();
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k || !k.startsWith(ENTRY_PREFIX)) continue;
+        const date = k.slice(ENTRY_PREFIX.length); // YYYY-MM-DD
+        if (/^\d{4}-\d{2}-\d{2}$/.test(date)) set.add(date);
+      }
+      return set;
+    }
+
+    function populateYearMonthSelectors() {
+      const ySel = $("yearSelect");
+      const mSel = $("monthSelect");
+      if (!ySel || !mSel) return;
+
+      // 현재 기록의 범위를 기준으로 Year를 잡되, 없으면 현재년도 기준 ±2
+      const dates = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(ENTRY_PREFIX)) {
+          const d = k.slice(ENTRY_PREFIX.length);
+          if (/^\d{4}-\d{2}-\d{2}$/.test(d)) dates.push(d);
+        }
+      }
+      const now = new Date();
+      const curY = now.getFullYear();
+
+      let minY = curY - 2, maxY = curY + 2;
+      if (dates.length) {
+        dates.sort();
+        minY = Math.min(minY, Number(dates[0].slice(0, 4)));
+        maxY = Math.max(maxY, Number(dates[dates.length - 1].slice(0, 4)));
+      }
+
+      ySel.innerHTML = "";
+      for (let y = minY; y <= maxY; y++) {
+        const opt = document.createElement("option");
+        opt.value = String(y);
+        opt.textContent = `${y}년`;
+        ySel.appendChild(opt);
+      }
+
+      mSel.innerHTML = "";
+      for (let m = 1; m <= 12; m++) {
+        const opt = document.createElement("option");
+        opt.value = String(m);
+        opt.textContent = `${m}월`;
+        mSel.appendChild(opt);
+      }
+    }
+
+    function renderCalendar(year, month1to12) {
+      const cal = $("calendar");
+      const label = $("monthLabel");
+      if (!cal) return;
+
+      const entrySet = getEntryDateSet();
+      const firstDow = weekdayOf(year, month1to12, 1);
+      const totalDays = daysInMonth(year, month1to12);
+
+      if (label) label.textContent = `${year}년 ${month1to12}월`;
+
+      cal.innerHTML = "";
+
+      const head = document.createElement("div");
+      head.className = "calGrid";
+      ["일", "월", "화", "수", "목", "금", "토"].forEach(d => {
+        const div = document.createElement("div");
+        div.className = "calHead";
+        div.textContent = d;
+        head.appendChild(div);
+      });
+      cal.appendChild(head);
+
+      const grid = document.createElement("div");
+      grid.className = "calGrid";
+
+      // 앞쪽 빈칸
+      for (let i = 0; i < firstDow; i++) {
+        const empty = document.createElement("div");
+        empty.className = "calDay disabled";
+        empty.textContent = "";
+        grid.appendChild(empty);
+      }
+
+      for (let day = 1; day <= totalDays; day++) {
+        const dateISO = ymd(year, month1to12, day);
+
+        const cell = document.createElement("div");
+        cell.className = "calDay";
+        cell.textContent = String(day);
+
+        if (entrySet.has(dateISO)) cell.classList.add("hasEntry");
+        if (dateISO === selectedDate) cell.classList.add("selected");
+
+        cell.addEventListener("click", () => {
+          renderForDate(dateISO);
+          setStatus("이동");
+          // 선택 표시 갱신
+          renderCalendar(year, month1to12);
+        });
+
+        grid.appendChild(cell);
+      }
+
+      cal.appendChild(grid);
+    }
+
+    function syncCalendarToSelectedDate() {
+      const ySel = $("yearSelect");
+      const mSel = $("monthSelect");
+      if (!ySel || !mSel) return;
+
+      const [y, m] = selectedDate.split("-").map(Number);
+      ySel.value = String(y);
+      mSel.value = String(m);
+      renderCalendar(y, m);
+    }
+
+    function setupCalendarUI() {
+      populateYearMonthSelectors();
+
+      const ySel = $("yearSelect");
+      const mSel = $("monthSelect");
+      if (!ySel || !mSel) return;
+
+      // 초기값: 오늘 날짜 기준으로 달력 표시
+      const now = new Date();
+      ySel.value = String(now.getFullYear());
+      mSel.value = String(now.getMonth() + 1);
+      renderCalendar(now.getFullYear(), now.getMonth() + 1);
+
+      ySel.addEventListener("change", () => {
+        renderCalendar(Number(ySel.value), Number(mSel.value));
+      });
+      mSel.addEventListener("change", () => {
+        renderCalendar(Number(ySel.value), Number(mSel.value));
+      });
+    }
+
+
+    function getAuth() {
+      try { return JSON.parse(localStorage.getItem(AUTH_KEY) || "{}"); }
+      catch { return {}; }
+    }
+
+    function setSession(loggedIn) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ loggedIn: !!loggedIn }));
+    }
+
+    function getSession() {
+      try { return JSON.parse(localStorage.getItem(SESSION_KEY) || "{}"); }
+      catch { return {}; }
+    }
+
+    // ===== Summary (local heuristic 1~2 lines) =====
+    function summarizeText(text) {
+      const cleaned = (text || "")
+        .replace(/\r/g, "")
+        .replace(/[ \t]+/g, " ")
+        .trim();
+
+      if (!cleaned) return "";
+
+      const sentences = cleaned
+        .replace(/\n+/g, " ")
+        .split(/(?<=[\.\!\?。]|다\.|요\.|함\.|임\.)\s+|(?<=\.)\s+|(?<=\!)\s+|(?<=\?)\s+/g)
+        .map(s => s.trim())
+        .filter(s => s.length >= 6);
+
+      let summary = "";
+      if (sentences.length) summary = sentences.slice(0, 2).join(" ").trim();
+      else summary = cleaned.split("\n").map(s => s.trim()).filter(Boolean).slice(0, 2).join(" ").trim();
+
+      const MAX = 160;
+      if (summary.length > MAX) summary = summary.slice(0, MAX).trim() + "…";
+      return summary;
+    }
+
+    // ===== Entry CRUD =====
+    function loadEntry(dateISO) {
+      const raw = localStorage.getItem(entryKey(dateISO));
+      if (!raw) return null;
+      try { return JSON.parse(raw); } catch { return null; }
+    }
+
+    function saveEntry(dateISO, text) {
+      const entry = {
+        date: dateISO,
+        text: text || "",
+        summary: summarizeText(text),
+        updatedAt: new Date().toISOString()
+      };
+      localStorage.setItem(entryKey(dateISO), JSON.stringify(entry));
+      return entry;
+    }
+
+    function deleteEntry(dateISO) {
+      localStorage.removeItem(entryKey(dateISO));
+    }
+
+    // ===== Recent Entries List =====
+    function listRecentEntries(limit = 10) {
+      const items = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k || !k.startsWith(ENTRY_PREFIX)) continue;
+        const raw = localStorage.getItem(k);
+        try {
+          const e = JSON.parse(raw);
+          if (e && e.date) items.push(e);
+        } catch { }
+      }
+      items.sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")));
+      return items.slice(0, limit);
+    }
+
+    function renderRecent() {
+      const box = $("recentList");
+      box.innerHTML = "";
+      const list = listRecentEntries(10);
+
+      if (!list.length) {
+        box.innerHTML = `<div class="muted">(최근 기록 없음)</div>`;
+        return;
+      }
+
+      list.forEach(e => {
+        const btn = document.createElement("button");
+        btn.style.display = "block";
+        btn.style.width = "100%";
+        btn.style.marginBottom = "6px";
+        btn.textContent = e.date;
+        btn.addEventListener("click", () => {
+          renderForDate(e.date);
+          setStatus("이동");
+        });
+        box.appendChild(btn);
+      });
+    }
+
+    // ===== Screen Control =====
+    function showAuth() {
+      $("authScreen").classList.remove("hidden");
+      $("appScreen").classList.add("hidden");
+    }
+
+    function showApp() {
+      $("authScreen").classList.add("hidden");
+      $("appScreen").classList.remove("hidden");
+    }
+
+    // ===== App Rendering =====
+    let selectedDate = todayISO();
+    // ===== Auto Save =====
+    let autoSaveTimer = null;
+
+    function renderForDate(dateISO) {
+
+      // 🔒 날짜 이동 전 현재 내용 강제 저장
+      saveEntry(selectedDate, $("textArea").value);
+
+      selectedDate = dateISO;
+      $("datePicker").value = dateISO;
+      $("selectedDateLabel").textContent = dateISO;
+
+      const entry = loadEntry(dateISO);
+      if (entry) {
+        $("textArea").value = entry.text || "";
+        $("summaryBox").textContent = entry.summary ? entry.summary : "(요약 없음)";
+        $("updatedAt").textContent = `마지막 저장: ${formatLocalTime(entry.updatedAt)}`;
+
+      } else {
+        $("textArea").value = "";
+        $("summaryBox").textContent = "(기록 없음)";
+        $("updatedAt").textContent = "";
+      }
+      syncCalendarToSelectedDate();
+
+    }
+
+    // ===== Auth =====
+    function login() {
+      const id = ($("idInput").value || "").trim();
+      const pin = ($("pinInput").value || "").trim();
+      const auth = getAuth();
+
+      if (!id || !pin) {
+        $("authError").textContent = "ID와 PIN을 입력하십시오.";
+        return;
+      }
+      if (id === auth.id && pin === auth.pin) {
+        $("authError").textContent = "";
+        setSession(true);
+        showApp();
+        renderForDate(todayISO());
+        setStatus("로그인 성공");
+      } else {
+        $("authError").textContent = "ID 또는 PIN이 올바르지 않습니다.";
+      }
+    }
+
+    function logout() {
+      setSession(false);
+      $("idInput").value = "";
+      $("pinInput").value = "";
+      showAuth();
+      setStatus("로그아웃");
+    }
+
+    // ===== Settings Modal =====
+    function openSettings() {
+      $("settingsMsg").textContent = "";
+      $("backupMsg").textContent = "";
+      $("settingsOverlay").classList.remove("hidden");
+      setTimeout(() => { $("newId").focus(); }, 0);
+    }
+
+    function closeSettings() {
+      $("settingsOverlay").classList.add("hidden");
+    }
+
+    function changeAuth() {
+      const newId = ($("newId").value || "").trim();
+      const newPin = ($("newPin").value || "").trim();
+
+      if (!newId && !newPin) {
+        $("settingsMsg").textContent = "변경할 ID 또는 PIN을 입력하십시오.";
+        return;
+      }
+
+      const current = getAuth();
+      const updated = { ...current };
+
+      if (newId) updated.id = newId;
+
+      if (newPin) {
+        if (!/^\d{4,8}$/.test(newPin)) {
+          $("settingsMsg").textContent = "PIN은 4~8자리 숫자만 가능합니다.";
+          return;
+        }
+        updated.pin = newPin;
+      }
+
+      localStorage.setItem(AUTH_KEY, JSON.stringify(updated));
+      $("newId").value = "";
+      $("newPin").value = "";
+      $("settingsMsg").textContent = "저장되었습니다.";
+      setStatus("설정 저장");
+    }
+
+    function setupOverlayClose() {
+      $("settingsOverlay").addEventListener("click", (e) => {
+        if (e.target === $("settingsOverlay")) closeSettings();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !$("settingsOverlay").classList.contains("hidden")) {
+          closeSettings();
+        }
+      });
+    }
+
+    // ===== Backup / Restore =====
+    function getAllDiaryEntries() {
+      const entries = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k || !k.startsWith(ENTRY_PREFIX)) continue;
+        const raw = localStorage.getItem(k);
+        try {
+          const e = JSON.parse(raw);
+          if (e && e.date) entries.push(e);
+        } catch { }
+      }
+      // 날짜 순으로 정렬(읽기 편하게)
+      entries.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+      return entries;
+    }
+
+    function exportBackup() {
+      try {
+        const auth = getAuth();            // ID/PIN도 포함(원하시면 제외 가능)
+        const entries = getAllDiaryEntries();
+
+        const payload = {
+          meta: {
+            app: "IDID^^",
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            origin: location.origin
+          },
+          auth: auth,
+          entries: entries
+        };
+
+        const json = JSON.stringify(payload, null, 2);
+        const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+
+        const filename = `IDID_backup_${todayISO()}.json`;
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        $("backupMsg").textContent = `백업 완료: ${filename} (기록 ${entries.length}개)`;
+        setStatus("백업 완료");
+      } catch (err) {
+        console.error(err);
+        $("backupMsg").textContent = "백업 중 오류가 발생했습니다.";
+      }
+    }
+
+    function validateBackupObject(obj) {
+      if (!obj || typeof obj !== "object") return false;
+      if (!obj.meta || obj.meta.app !== "IDID^^") return false;
+      if (!Array.isArray(obj.entries)) return false;
+      return true;
+    }
+
+    function clearAllDiaryEntries() {
+      const toDelete = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(ENTRY_PREFIX)) toDelete.push(k);
+      }
+      toDelete.forEach(k => localStorage.removeItem(k));
+    }
+
+    // mode: "merge" | "replace"
+    function applyBackup(obj, mode) {
+      if (!validateBackupObject(obj)) {
+        $("backupMsg").textContent = "이 파일은 IDID^^ 백업 파일이 아닙니다.";
+        return;
+      }
+
+      if (mode === "replace") {
+        clearAllDiaryEntries();
+      }
+
+      // auth 적용(원하면 제외 가능)
+      if (obj.auth && typeof obj.auth === "object") {
+        // 최소한의 형태만 허용
+        const id = String(obj.auth.id || "").trim();
+        const pin = String(obj.auth.pin || "").trim();
+        if (id && pin) {
+          localStorage.setItem(AUTH_KEY, JSON.stringify({ id, pin }));
+        }
+      }
+
+      // entries 적용
+      let imported = 0;
+      let updated = 0;
+
+      // 기존 엔트리 맵(업데이트 여부 판단용)
+      const existingMap = new Map();
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k || !k.startsWith(ENTRY_PREFIX)) continue;
+        const date = k.slice(ENTRY_PREFIX.length);
+        existingMap.set(date, localStorage.getItem(k));
+      }
+
+      for (const e of obj.entries) {
+        if (!e || typeof e !== "object") continue;
+        const date = String(e.date || "").trim();
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+
+        const normalized = {
+          date,
+          text: String(e.text || ""),
+          summary: String(e.summary || summarizeText(String(e.text || ""))),
+          updatedAt: String(e.updatedAt || new Date().toISOString())
+        };
+
+        const key = entryKey(date);
+        const prev = existingMap.get(date);
+
+        if (prev) updated++;
+        else imported++;
+
+        localStorage.setItem(key, JSON.stringify(normalized));
+      }
+
+      $("backupMsg").textContent =
+        (mode === "replace")
+          ? `복원(덮어쓰기) 완료: 추가 ${imported}개 / 갱신 ${updated}개`
+          : `복원(합치기) 완료: 추가 ${imported}개 / 갱신 ${updated}개`;
+
+      setStatus("복원 완료");
+
+      // 화면 즉시 반영
+      renderForDate(selectedDate);
+    }
+
+    let importMode = "merge";
+    function triggerImport(mode) {
+      importMode = mode;
+      $("importFile").value = ""; // 같은 파일 재선택 가능하게
+      $("importFile").click();
+    }
+
+    function handleImportFile(file) {
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const text = String(reader.result || "");
+          const obj = JSON.parse(text);
+          applyBackup(obj, importMode);
+        } catch (err) {
+          console.error(err);
+          $("backupMsg").textContent = "파일을 읽을 수 없습니다. (JSON 형식 오류)";
+        }
+      };
+      reader.onerror = () => {
+        $("backupMsg").textContent = "파일 읽기 오류가 발생했습니다.";
+      };
+      reader.readAsText(file, "utf-8");
+    }
+
+    // ===== Events =====
+    $("btnLogin").addEventListener("click", login);
+    $("pinInput").addEventListener("keydown", (e) => { if (e.key === "Enter") login(); });
+    $("idInput").addEventListener("keydown", (e) => { if (e.key === "Enter") $("pinInput").focus(); });
+
+    $("btnLogout").addEventListener("click", logout);
+
+    $("datePicker").addEventListener("change", (e) => {
+      if (e.target.value) renderForDate(e.target.value);
+    });
+
+    $("btnToday").addEventListener("click", () => renderForDate(todayISO()));
+
+    // 자동 저장 (입력 멈춘 후 3초)
+    $("textArea").addEventListener("input", () => {
+      if (autoSaveTimer) clearTimeout(autoSaveTimer);
+
+      autoSaveTimer = setTimeout(() => {
+        const entry = saveEntry(selectedDate, $("textArea").value);
+
+        $("summaryBox").textContent = entry.summary
+          ? entry.summary
+          : "(요약 없음)";
+
+        $("updatedAt").textContent =
+          `자동 저장: ${formatLocalTime(entry.updatedAt)}`;
+      }, 3000);
+    });
+
+    $("btnSave").addEventListener("click", () => {
+      const entry = saveEntry(selectedDate, $("textArea").value);
+      $("summaryBox").textContent = entry.summary ? entry.summary : "(요약 없음)";
+      $("updatedAt").textContent = `마지막 저장: ${formatLocalTime(entry.updatedAt)}`;
+      renderRecent();
+      setStatus("저장 완료");
+    });
+
+    $("btnDelete").addEventListener("click", () => {
+      deleteEntry(selectedDate);
+      renderForDate(selectedDate);
+      setStatus("삭제 완료");
+    });
+
+    $("btnOpenSettings").addEventListener("click", openSettings);
+    $("btnCloseSettings").addEventListener("click", closeSettings);
+    $("btnCancelSettings").addEventListener("click", closeSettings);
+    $("btnChangeAuth").addEventListener("click", changeAuth);
+
+    // Backup/Restore buttons
+    $("btnExport").addEventListener("click", exportBackup);
+    $("btnImportMerge").addEventListener("click", () => triggerImport("merge"));
+    $("btnImportReplace").addEventListener("click", () => triggerImport("replace"));
+    $("importFile").addEventListener("change", (e) => handleImportFile(e.target.files && e.target.files[0]));
+
+    // ===== Boot =====
+    (function boot() {
+      $("yearNow").textContent = String(new Date().getFullYear());
+      ensureDefaultAuth();
+      setupOverlayClose();
+
+      setupCalendarUI();
+
+      const session = getSession();
+      if (session.loggedIn) {
+        showApp();
+        renderForDate(todayISO());
+      } else {
+        showAuth();
+      }
+    })();
+  </script>
+</body>
+
+</html>
