@@ -754,8 +754,14 @@
 
     // ===== App Rendering =====
     let selectedDate = todayISO();
+    // ===== Auto Save =====
+    let autoSaveTimer = null;
 
     function renderForDate(dateISO) {
+
+      // 🔒 날짜 이동 전 현재 내용 강제 저장
+      saveEntry(selectedDate, $("textArea").value);
+
       selectedDate = dateISO;
       $("datePicker").value = dateISO;
       $("selectedDateLabel").textContent = dateISO;
@@ -1031,6 +1037,22 @@
     });
 
     $("btnToday").addEventListener("click", () => renderForDate(todayISO()));
+
+    // 자동 저장 (입력 멈춘 후 3초)
+    $("textArea").addEventListener("input", () => {
+      if (autoSaveTimer) clearTimeout(autoSaveTimer);
+
+      autoSaveTimer = setTimeout(() => {
+        const entry = saveEntry(selectedDate, $("textArea").value);
+
+        $("summaryBox").textContent = entry.summary
+          ? entry.summary
+          : "(요약 없음)";
+
+        $("updatedAt").textContent =
+          `자동 저장: ${formatLocalTime(entry.updatedAt)}`;
+      }, 3000);
+    });
 
     $("btnSave").addEventListener("click", () => {
       const entry = saveEntry(selectedDate, $("textArea").value);
