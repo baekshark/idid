@@ -824,7 +824,10 @@
         $("authError").textContent = "";
         setSession(true);
         showApp();
+
+        const last = localStorage.getItem(LAST_DATE_KEY) || todayISO();
         renderForDate(last);   // ✅ 마지막 날짜로 복원
+        
         setStatus("로그인 성공");
       } else {
         $("authError").textContent = "ID 또는 PIN이 올바르지 않습니다.";
