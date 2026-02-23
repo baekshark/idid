@@ -473,6 +473,7 @@
     const AUTH_KEY = "idid:auth";        // {id,pin}
     const SESSION_KEY = "idid:session";  // {loggedIn:true}
     const ENTRY_PREFIX = "idid:diary:";  // idid:diary:YYYY-MM-DD
+    const LAST_DATE_KEY = "idid:lastDate";
 
     function entryKey(dateISO) { return `${ENTRY_PREFIX}${dateISO}`; } // {date,text,summary,updatedAt}
 
@@ -788,6 +789,7 @@
       saveEntry(selectedDate, $("textArea").value);
 
       selectedDate = dateISO;
+      localStorage.setItem(LAST_DATE_KEY, dateISO); // ✅ 추가
       $("datePicker").value = dateISO;
       $("selectedDateLabel").textContent = dateISO;
 
@@ -808,332 +810,334 @@
 
     // ===== Auth =====
     function login() {
-      const id = ($("idInput").value || "").trim();
-      const pin = ($("pinInput").value || "").trim();
-      const auth = getAuth();
+        const id = ($("idInput").value || "").trim();
+        const pin = ($("pinInput").value || "").trim();
+        const auth = getAuth();
 
-      if (!id || !pin) {
-        $("authError").textContent = "ID와 PIN을 입력하십시오.";
-        return;
-      }
-      if (id === auth.id && pin === auth.pin) {
-        $("authError").textContent = "";
-        setSession(true);
-        showApp();
-        renderForDate(todayISO());
-        setStatus("로그인 성공");
-      } else {
-        $("authError").textContent = "ID 또는 PIN이 올바르지 않습니다.";
-      }
-    }
-
-    function logout() {
-      setSession(false);
-      $("idInput").value = "";
-      $("pinInput").value = "";
-      showAuth();
-      setStatus("로그아웃");
-    }
-
-    // ===== Settings Modal =====
-    function openSettings() {
-      $("settingsMsg").textContent = "";
-      $("backupMsg").textContent = "";
-      $("settingsOverlay").classList.remove("hidden");
-      setTimeout(() => { $("newId").focus(); }, 0);
-    }
-
-    function closeSettings() {
-      $("settingsOverlay").classList.add("hidden");
-    }
-
-    function changeAuth() {
-      const newId = ($("newId").value || "").trim();
-      const newPin = ($("newPin").value || "").trim();
-
-      if (!newId && !newPin) {
-        $("settingsMsg").textContent = "변경할 ID 또는 PIN을 입력하십시오.";
-        return;
-      }
-
-      const current = getAuth();
-      const updated = { ...current };
-
-      if (newId) updated.id = newId;
-
-      if (newPin) {
-        if (!/^\d{4,8}$/.test(newPin)) {
-          $("settingsMsg").textContent = "PIN은 4~8자리 숫자만 가능합니다.";
+        if (!id || !pin) {
+          $("authError").textContent = "ID와 PIN을 입력하십시오.";
           return;
         }
-        updated.pin = newPin;
-      }
-
-      localStorage.setItem(AUTH_KEY, JSON.stringify(updated));
-      $("newId").value = "";
-      $("newPin").value = "";
-      $("settingsMsg").textContent = "저장되었습니다.";
-      setStatus("설정 저장");
-    }
-
-    function setupOverlayClose() {
-      $("settingsOverlay").addEventListener("click", (e) => {
-        if (e.target === $("settingsOverlay")) closeSettings();
-      });
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && !$("settingsOverlay").classList.contains("hidden")) {
-          closeSettings();
-        }
-      });
-    }
-
-    // ===== Backup / Restore =====
-    function getAllDiaryEntries() {
-      const entries = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (!k || !k.startsWith(ENTRY_PREFIX)) continue;
-        const raw = localStorage.getItem(k);
-        try {
-          const e = JSON.parse(raw);
-          if (e && e.date) entries.push(e);
-        } catch { }
-      }
-      // 날짜 순으로 정렬(읽기 편하게)
-      entries.sort((a, b) => String(a.date).localeCompare(String(b.date)));
-      return entries;
-    }
-
-    function exportBackup() {
-      try {
-        const auth = getAuth();            // ID/PIN도 포함(원하시면 제외 가능)
-        const entries = getAllDiaryEntries();
-
-        const payload = {
-          meta: {
-            app: "IDID^^",
-            version: 1,
-            exportedAt: new Date().toISOString(),
-            origin: location.origin
-          },
-          auth: auth,
-          entries: entries
-        };
-
-        const json = JSON.stringify(payload, null, 2);
-        const blob = new Blob([json], { type: "application/json;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-
-        const filename = `IDID_backup_${todayISO()}.json`;
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-
-        $("backupMsg").textContent = `백업 완료: ${filename} (기록 ${entries.length}개)`;
-        setStatus("백업 완료");
-      } catch (err) {
-        console.error(err);
-        $("backupMsg").textContent = "백업 중 오류가 발생했습니다.";
-      }
-    }
-
-    function validateBackupObject(obj) {
-      if (!obj || typeof obj !== "object") return false;
-      if (!obj.meta || obj.meta.app !== "IDID^^") return false;
-      if (!Array.isArray(obj.entries)) return false;
-      return true;
-    }
-
-    function clearAllDiaryEntries() {
-      const toDelete = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k && k.startsWith(ENTRY_PREFIX)) toDelete.push(k);
-      }
-      toDelete.forEach(k => localStorage.removeItem(k));
-    }
-
-    // mode: "merge" | "replace"
-    function applyBackup(obj, mode) {
-      if (!validateBackupObject(obj)) {
-        $("backupMsg").textContent = "이 파일은 IDID^^ 백업 파일이 아닙니다.";
-        return;
-      }
-
-      if (mode === "replace") {
-        clearAllDiaryEntries();
-      }
-
-      // auth 적용(원하면 제외 가능)
-      if (obj.auth && typeof obj.auth === "object") {
-        // 최소한의 형태만 허용
-        const id = String(obj.auth.id || "").trim();
-        const pin = String(obj.auth.pin || "").trim();
-        if (id && pin) {
-          localStorage.setItem(AUTH_KEY, JSON.stringify({ id, pin }));
+        if (id === auth.id && pin === auth.pin) {
+          $("authError").textContent = "";
+          setSession(true);
+          showApp();
+          renderForDate(last);   // ✅ 마지막 날짜로 복원
+          setStatus("로그인 성공");
+        } else {
+          $("authError").textContent = "ID 또는 PIN이 올바르지 않습니다.";
         }
       }
-
-      // entries 적용
-      let imported = 0;
-      let updated = 0;
-
-      // 기존 엔트리 맵(업데이트 여부 판단용)
-      const existingMap = new Map();
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (!k || !k.startsWith(ENTRY_PREFIX)) continue;
-        const date = k.slice(ENTRY_PREFIX.length);
-        existingMap.set(date, localStorage.getItem(k));
+      function logout() {
+        setSession(false);
+        $("idInput").value = "";
+        $("pinInput").value = "";
+        showAuth();
+        setStatus("로그아웃");
       }
 
-      for (const e of obj.entries) {
-        if (!e || typeof e !== "object") continue;
-        const date = String(e.date || "").trim();
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
-
-        const normalized = {
-          date,
-          text: String(e.text || ""),
-          summary: String(e.summary || summarizeText(String(e.text || ""))),
-          updatedAt: String(e.updatedAt || new Date().toISOString())
-        };
-
-        const key = entryKey(date);
-        const prev = existingMap.get(date);
-
-        if (prev) updated++;
-        else imported++;
-
-        localStorage.setItem(key, JSON.stringify(normalized));
+      // ===== Settings Modal =====
+      function openSettings() {
+        $("settingsMsg").textContent = "";
+        $("backupMsg").textContent = "";
+        $("settingsOverlay").classList.remove("hidden");
+        setTimeout(() => { $("newId").focus(); }, 0);
       }
 
-      $("backupMsg").textContent =
-        (mode === "replace")
-          ? `복원(덮어쓰기) 완료: 추가 ${imported}개 / 갱신 ${updated}개`
-          : `복원(합치기) 완료: 추가 ${imported}개 / 갱신 ${updated}개`;
+      function closeSettings() {
+        $("settingsOverlay").classList.add("hidden");
+      }
 
-      setStatus("복원 완료");
+      function changeAuth() {
+        const newId = ($("newId").value || "").trim();
+        const newPin = ($("newPin").value || "").trim();
 
-      // 화면 즉시 반영
-      renderForDate(selectedDate);
-    }
+        if (!newId && !newPin) {
+          $("settingsMsg").textContent = "변경할 ID 또는 PIN을 입력하십시오.";
+          return;
+        }
 
-    let importMode = "merge";
-    function triggerImport(mode) {
-      importMode = mode;
-      $("importFile").value = ""; // 같은 파일 재선택 가능하게
-      $("importFile").click();
-    }
+        const current = getAuth();
+        const updated = { ...current };
 
-    function handleImportFile(file) {
-      if (!file) return;
+        if (newId) updated.id = newId;
 
-      const reader = new FileReader();
-      reader.onload = () => {
+        if (newPin) {
+          if (!/^\d{4,8}$/.test(newPin)) {
+            $("settingsMsg").textContent = "PIN은 4~8자리 숫자만 가능합니다.";
+            return;
+          }
+          updated.pin = newPin;
+        }
+
+        localStorage.setItem(AUTH_KEY, JSON.stringify(updated));
+        $("newId").value = "";
+        $("newPin").value = "";
+        $("settingsMsg").textContent = "저장되었습니다.";
+        setStatus("설정 저장");
+      }
+
+      function setupOverlayClose() {
+        $("settingsOverlay").addEventListener("click", (e) => {
+          if (e.target === $("settingsOverlay")) closeSettings();
+        });
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && !$("settingsOverlay").classList.contains("hidden")) {
+            closeSettings();
+          }
+        });
+      }
+
+      // ===== Backup / Restore =====
+      function getAllDiaryEntries() {
+        const entries = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (!k || !k.startsWith(ENTRY_PREFIX)) continue;
+          const raw = localStorage.getItem(k);
+          try {
+            const e = JSON.parse(raw);
+            if (e && e.date) entries.push(e);
+          } catch { }
+        }
+        // 날짜 순으로 정렬(읽기 편하게)
+        entries.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+        return entries;
+      }
+
+      function exportBackup() {
         try {
-          const text = String(reader.result || "");
-          const obj = JSON.parse(text);
-          applyBackup(obj, importMode);
+          const auth = getAuth();            // ID/PIN도 포함(원하시면 제외 가능)
+          const entries = getAllDiaryEntries();
+
+          const payload = {
+            meta: {
+              app: "IDID^^",
+              version: 1,
+              exportedAt: new Date().toISOString(),
+              origin: location.origin
+            },
+            auth: auth,
+            entries: entries
+          };
+
+          const json = JSON.stringify(payload, null, 2);
+          const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+
+          const filename = `IDID_backup_${todayISO()}.json`;
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+
+          $("backupMsg").textContent = `백업 완료: ${filename} (기록 ${entries.length}개)`;
+          setStatus("백업 완료");
         } catch (err) {
           console.error(err);
-          $("backupMsg").textContent = "파일을 읽을 수 없습니다. (JSON 형식 오류)";
+          $("backupMsg").textContent = "백업 중 오류가 발생했습니다.";
         }
-      };
-      reader.onerror = () => {
-        $("backupMsg").textContent = "파일 읽기 오류가 발생했습니다.";
-      };
-      reader.readAsText(file, "utf-8");
-    }
+      }
 
-    // ===== Events =====
-    $("btnLogin").addEventListener("click", login);
-    $("pinInput").addEventListener("keydown", (e) => { if (e.key === "Enter") login(); });
-    $("idInput").addEventListener("keydown", (e) => { if (e.key === "Enter") $("pinInput").focus(); });
+      function validateBackupObject(obj) {
+        if (!obj || typeof obj !== "object") return false;
+        if (!obj.meta || obj.meta.app !== "IDID^^") return false;
+        if (!Array.isArray(obj.entries)) return false;
+        return true;
+      }
 
-    $("btnLogout").addEventListener("click", logout);
+      function clearAllDiaryEntries() {
+        const toDelete = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith(ENTRY_PREFIX)) toDelete.push(k);
+        }
+        toDelete.forEach(k => localStorage.removeItem(k));
+      }
 
-    $("datePicker").addEventListener("change", (e) => {
-      if (e.target.value) renderForDate(e.target.value);
-    });
-
-    $("btnToday").addEventListener("click", () => renderForDate(todayISO()));
-
-    // 자동 저장 (입력 멈춘 후 3초)
-    $("textArea").addEventListener("input", () => {
-      if (autoSaveTimer) clearTimeout(autoSaveTimer);
-
-      autoSaveTimer = setTimeout(() => {
-        const entry = saveEntry(selectedDate, $("textArea").value);
-
-        // 🔴 저장 실패 시
-        if (!entry) {
-          setStatus("⚠️ 자동저장 실패");
+      // mode: "merge" | "replace"
+      function applyBackup(obj, mode) {
+        if (!validateBackupObject(obj)) {
+          $("backupMsg").textContent = "이 파일은 IDID^^ 백업 파일이 아닙니다.";
           return;
         }
 
-        $("summaryBox").textContent = entry.summary
-          ? entry.summary
-          : "(요약 없음)";
+        if (mode === "replace") {
+          clearAllDiaryEntries();
+        }
 
+        // auth 적용(원하면 제외 가능)
+        if (obj.auth && typeof obj.auth === "object") {
+          // 최소한의 형태만 허용
+          const id = String(obj.auth.id || "").trim();
+          const pin = String(obj.auth.pin || "").trim();
+          if (id && pin) {
+            localStorage.setItem(AUTH_KEY, JSON.stringify({ id, pin }));
+          }
+        }
+
+        // entries 적용
+        let imported = 0;
+        let updated = 0;
+
+        // 기존 엔트리 맵(업데이트 여부 판단용)
+        const existingMap = new Map();
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (!k || !k.startsWith(ENTRY_PREFIX)) continue;
+          const date = k.slice(ENTRY_PREFIX.length);
+          existingMap.set(date, localStorage.getItem(k));
+        }
+
+        for (const e of obj.entries) {
+          if (!e || typeof e !== "object") continue;
+          const date = String(e.date || "").trim();
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+
+          const normalized = {
+            date,
+            text: String(e.text || ""),
+            summary: String(e.summary || summarizeText(String(e.text || ""))),
+            updatedAt: String(e.updatedAt || new Date().toISOString())
+          };
+
+          const key = entryKey(date);
+          const prev = existingMap.get(date);
+
+          if (prev) updated++;
+          else imported++;
+
+          localStorage.setItem(key, JSON.stringify(normalized));
+        }
+
+        $("backupMsg").textContent =
+          (mode === "replace")
+            ? `복원(덮어쓰기) 완료: 추가 ${imported}개 / 갱신 ${updated}개`
+            : `복원(합치기) 완료: 추가 ${imported}개 / 갱신 ${updated}개`;
+
+        setStatus("복원 완료");
+
+        // 화면 즉시 반영
+        renderForDate(selectedDate);
+      }
+
+      let importMode = "merge";
+      function triggerImport(mode) {
+        importMode = mode;
+        $("importFile").value = ""; // 같은 파일 재선택 가능하게
+        $("importFile").click();
+      }
+
+      function handleImportFile(file) {
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const text = String(reader.result || "");
+            const obj = JSON.parse(text);
+            applyBackup(obj, importMode);
+          } catch (err) {
+            console.error(err);
+            $("backupMsg").textContent = "파일을 읽을 수 없습니다. (JSON 형식 오류)";
+          }
+        };
+        reader.onerror = () => {
+          $("backupMsg").textContent = "파일 읽기 오류가 발생했습니다.";
+        };
+        reader.readAsText(file, "utf-8");
+      }
+
+      // ===== Events =====
+      $("btnLogin").addEventListener("click", login);
+      $("pinInput").addEventListener("keydown", (e) => { if (e.key === "Enter") login(); });
+      $("idInput").addEventListener("keydown", (e) => { if (e.key === "Enter") $("pinInput").focus(); });
+
+      $("btnLogout").addEventListener("click", logout);
+
+      $("datePicker").addEventListener("change", (e) => {
+        if (e.target.value) renderForDate(e.target.value);
+      });
+
+      $("btnToday").addEventListener("click", () => renderForDate(todayISO()));
+
+      // 자동 저장 (입력 멈춘 후 3초)
+      $("textArea").addEventListener("input", () => {
+        if (autoSaveTimer) clearTimeout(autoSaveTimer);
+
+        autoSaveTimer = setTimeout(() => {
+          const entry = saveEntry(selectedDate, $("textArea").value);
+
+          // 🔴 저장 실패 시
+          if (!entry) {
+            setStatus("⚠️ 자동저장 실패");
+            return;
+          }
+
+          $("summaryBox").textContent = entry.summary
+            ? entry.summary
+            : "(요약 없음)";
+
+          $("updatedAt").textContent =
+            `자동 저장: ${formatLocalTime(entry.updatedAt)}`;
+        }, 3000);
+      });
+      $("btnSave").addEventListener("click", () => {
+        const entry = saveEntry(selectedDate, $("textArea").value);
+
+        if (!entry) {
+          alert("⚠️ 저장에 실패했습니다.\n지금 바로 백업(.json)으로 저장하세요.");
+          setStatus("저장 실패");
+          return;
+        }
+
+        $("summaryBox").textContent = entry.summary ? entry.summary : "(요약 없음)";
         $("updatedAt").textContent =
-          `자동 저장: ${formatLocalTime(entry.updatedAt)}`;
-      }, 3000);
-    });
-    $("btnSave").addEventListener("click", () => {
-      const entry = saveEntry(selectedDate, $("textArea").value);
+          `마지막 저장: ${formatLocalTime(entry.updatedAt)}`;
 
-      if (!entry) {
-        alert("⚠️ 저장에 실패했습니다.\n지금 바로 백업(.json)으로 저장하세요.");
-        setStatus("저장 실패");
-        return;
-      }
+        renderRecent();
+        setStatus("저장 완료");
+      });
 
-      $("summaryBox").textContent = entry.summary ? entry.summary : "(요약 없음)";
-      $("updatedAt").textContent =
-        `마지막 저장: ${formatLocalTime(entry.updatedAt)}`;
+      $("btnDelete").addEventListener("click", () => {
+        deleteEntry(selectedDate);
+        renderForDate(selectedDate);
+        setStatus("삭제 완료");
+      });
 
-      renderRecent();
-      setStatus("저장 완료");
-    });
+      $("btnOpenSettings").addEventListener("click", openSettings);
+      $("btnCloseSettings").addEventListener("click", closeSettings);
+      $("btnCancelSettings").addEventListener("click", closeSettings);
+      $("btnChangeAuth").addEventListener("click", changeAuth);
 
-    $("btnDelete").addEventListener("click", () => {
-      deleteEntry(selectedDate);
-      renderForDate(selectedDate);
-      setStatus("삭제 완료");
-    });
+      // Backup/Restore buttons
+      $("btnExport").addEventListener("click", exportBackup);
+      $("btnImportMerge").addEventListener("click", () => triggerImport("merge"));
+      $("btnImportReplace").addEventListener("click", () => triggerImport("replace"));
+      $("importFile").addEventListener("change", (e) => handleImportFile(e.target.files && e.target.files[0]));
 
-    $("btnOpenSettings").addEventListener("click", openSettings);
-    $("btnCloseSettings").addEventListener("click", closeSettings);
-    $("btnCancelSettings").addEventListener("click", closeSettings);
-    $("btnChangeAuth").addEventListener("click", changeAuth);
+      // ===== Boot =====
+      (function boot() {
+        $("yearNow").textContent = String(new Date().getFullYear());
+        ensureDefaultAuth();
+        setupOverlayClose();
 
-    // Backup/Restore buttons
-    $("btnExport").addEventListener("click", exportBackup);
-    $("btnImportMerge").addEventListener("click", () => triggerImport("merge"));
-    $("btnImportReplace").addEventListener("click", () => triggerImport("replace"));
-    $("importFile").addEventListener("change", (e) => handleImportFile(e.target.files && e.target.files[0]));
+        setupCalendarUI();
 
-    // ===== Boot =====
-    (function boot() {
-      $("yearNow").textContent = String(new Date().getFullYear());
-      ensureDefaultAuth();
-      setupOverlayClose();
+        const session = getSession();
+        if (session.loggedIn) {
+          showApp();
 
-      setupCalendarUI();
+          const last = localStorage.getItem(LAST_DATE_KEY) || todayISO();
+          renderForDate(last);   // ✅ 마지막 상태 복원
 
-      const session = getSession();
-      if (session.loggedIn) {
-        showApp();
-        renderForDate(todayISO());
-      } else {
-        showAuth();
-      }
-    })();
+        } else {
+          showAuth();
+        }
+      })();
   </script>
 </body>
 
