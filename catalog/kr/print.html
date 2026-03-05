@@ -1,133 +1,94 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>GLOBIS KOREA | Print Catalog</title>
+  <title>GLOBIS KOREA | Catalog Print (KR)</title>
 
-  <style id="base-style"></style>
-
+  <!-- PDF/인쇄 전용: A4 가로 + 스크롤영역 펼치기 + 페이지 분리 -->
   <style>
-    /* ===== PDF/PRINT OVERRIDES (핵심) ===== */
-    @page { size: A4 landscape; margin: 10mm; }
+    @page { size: A4 landscape; margin: 8mm; }
 
-    /* 배경/색상 그대로 */
-    html, body {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
+    /* 기본은 화면에서도 볼 수 있게 유지 */
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
-    /* 상단바/하단 점프/모달 등 인터랙션 요소 제거 */
-    .topbar, .drawer, .modal { display: none !important; }
+    /* 인쇄(PDF)에서만 강제 보정 */
+    @media print {
+      html, body { height: auto !important; }
 
-    /* 가로 스냅 트랙 -> 세로 문서 흐름 */
-    .track {
-      height: auto !important;
-      display: block !important;
-      overflow: visible !important;
-      scroll-snap-type: none !important;
-    }
+      /* 상단바/하단점프/모달 등 PDF에 불필요한 UI 제거 */
+      .topbar, .drawer, .modal { display: none !important; }
 
-    /* 각 "page" 섹션을 A4 한 장(또는 여러 장)로 흘러가게 */
-    .page{
-      width: auto !important;
-      height: auto !important;
-      min-height: 0 !important;
-      flex: none !important;
-      padding: 0 !important;
-      display: block !important;
-      break-after: page !important;
-      page-break-after: always !important;
-    }
+      /* 가로 스냅 트랙을 “세로 문서”로 변환 */
+      .track {
+        height: auto !important;
+        display: block !important;
+        overflow: visible !important;
+        scroll-snap-type: none !important;
+      }
 
-    /* 내부 스크롤(흰 배경/잘림 원인) 제거 */
-    .scroll{
-      max-height: none !important;
-      overflow: visible !important;
-    }
+      /* 각 page를 종이 한 장 단위로 분리 */
+      .page {
+        width: auto !important;
+        height: auto !important;
+        padding: 0 !important;
+        display: block !important;
+        break-after: page !important;
+        page-break-after: always !important;
+      }
 
-    /* 레이아웃 폭은 페이지 안에서 자연스럽게 */
-    .wrap{
-      width: 100% !important;
-      max-width: 100% !important;
-    }
+      /* 내부 스크롤(.scroll) 때문에 내용/배경이 잘리거나 하얗게 되는 문제 해결 */
+      .scroll {
+        max-height: none !important;
+        overflow: visible !important;
+      }
 
-    /* 워터마크는 프린트에서도 보이게 */
-    .watermark{
-      position: fixed !important;
-      inset: auto 0 8mm 0 !important;
-      z-index: 9999 !important;
-      display: flex !important;
-      justify-content: center !important;
-      pointer-events: none !important;
-    }
+      /* 카드 그림자(용량/깨짐 유발) 완화 */
+      .card { box-shadow: none !important; }
 
-    /* 이미지 로딩 강제(프린트 시 누락 방지) */
-    img{
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
+      /* 그리드/카드가 중간에서 잘리지 않게 */
+      .pcard, .kv, figure, .wrap, .card { break-inside: avoid !important; page-break-inside: avoid !important; }
 
-    /* 검색/칩(필터 UI)은 PDF에 필요 없으면 숨김 */
-    .libhead { display:none !important; }
-
-    /* 라이브러리 카드가 페이지에서 예쁘게 끊기도록 */
-    .pcard{
-      break-inside: avoid !important;
-      page-break-inside: avoid !important;
+      /* 인쇄에서 hover/transition이 이상 반복되며 “페이지가 아래에 복제”되는 현상 방지 */
+      * { transition: none !important; animation: none !important; }
     }
   </style>
-</head>
-
-<body>
-  <!-- index.html을 그대로 가져와서 PDF용으로만 변환 -->
-  <div id="mount" style="min-height:100vh;"></div>
 
   <script>
+    // index.html을 읽어서(같은 폴더) “디자인 그대로” 본문을 복제해오는 방식
+    // => print.html 자체가 망가져도 index.html 기준으로 항상 동일하게 재구성됨
     (async () => {
-      const res = await fetch("./index.html", { cache: "no-store" });
-      const html = await res.text();
-      const doc = new DOMParser().parseFromString(html, "text/html");
+      try {
+        const res = await fetch("./index.html?__=" + Date.now(), { cache: "no-store" });
+        const html = await res.text();
+        const doc = new DOMParser().parseFromString(html, "text/html");
 
-      // 1) 원본 index.html의 <style> 통째로 가져오기 (디자인 100% 동일)
-      const styleTag = doc.querySelector("style");
-      document.getElementById("base-style").textContent = styleTag ? styleTag.textContent : "";
+        // index.html의 모든 <style>을 그대로 복사 (디자인 동일)
+        const styles = Array.from(doc.querySelectorAll("head style"));
+        for (const s of styles) document.head.appendChild(s.cloneNode(true));
 
-      // 2) 원본의 <main id="track"> (카탈로그 본문) 그대로 가져오기
-      const main = doc.querySelector("main#track");
-      const watermark = doc.querySelector(".watermark");
+        // 본문: main#track(페이지들) + watermark(있는 경우)
+        const track = doc.querySelector("main#track, main.track, #track");
+        const watermark = doc.querySelector(".watermark");
 
-      const mount = document.getElementById("mount");
-      mount.innerHTML = "";
-      if (main) mount.appendChild(main.cloneNode(true));
-      if (watermark) mount.appendChild(watermark.cloneNode(true));
+        // body를 비우고 필요한 것만 넣기
+        document.body.innerHTML = "";
 
-      // 3) PDF에서는 버튼/이벤트 필요 없음 -> 클릭/JS 흔적 제거 + 이미지 로딩 강제
-      mount.querySelectorAll("[onclick]").forEach(el => el.removeAttribute("onclick"));
-      mount.querySelectorAll("input").forEach(el => el.remove());
+        if (track) document.body.appendChild(track.cloneNode(true));
+        if (watermark) document.body.appendChild(watermark.cloneNode(true));
 
-      mount.querySelectorAll("img").forEach(img => {
-        try {
-          img.loading = "eager";
-          img.decoding = "sync";
-          img.fetchPriority = "high";
-        } catch (e) {}
-      });
+        // 이미지/폰트 완전 로드 후 플래그 세팅 (puppeteer에서 이 플래그 기다리면 됨)
+        const imgs = Array.from(document.images || []);
+        await Promise.all(imgs.map(img => (img.decode ? img.decode().catch(()=>{}) : Promise.resolve())));
+        if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch(e){} }
 
-      // 4) 이미지 로딩 완료까지 대기 (puppeteer에서 찍을 때 누락 방지)
-      const imgs = Array.from(mount.querySelectorAll("img")).filter(i => i.src);
-      await Promise.all(imgs.map(i => i.complete ? Promise.resolve() : new Promise(r => {
-        i.addEventListener("load", r, { once:true });
-        i.addEventListener("error", r, { once:true });
-      })));
-
-      // 폰트 로딩 대기
-      try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch(e){}
-
-      // PDF용 타이틀(언어별 index.html title 그대로)
-      const t = doc.querySelector("title")?.textContent?.trim();
-      if (t) document.title = t.replace("Interactive", "Print");
+        window.__PRINT_READY__ = true;
+      } catch (e) {
+        document.body.innerHTML = "<pre style='white-space:pre-wrap;padding:16px'>PRINT BUILD ERROR: " + (e && e.message ? e.message : e) + "</pre>";
+        window.__PRINT_READY__ = false;
+      }
     })();
   </script>
-</body>
+</head>
+<body></body>
 </html>
