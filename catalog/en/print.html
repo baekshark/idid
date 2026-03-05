@@ -369,6 +369,35 @@ button,[role="button"],.btn,
 
 /* 애니메이션 제거 */
 *{ animation:none !important; transition:none !important; }
+
+/* ====== PRINT FIT (A4 가로 잘림 방지) ====== */
+:root{
+  --print-scale: .92; /* 0.85~1.00 사이로 조절 (잘리면 더 낮추기) */
+}
+
+@media print{
+  /* 크롬 PDF에서 가장 안정적인 강제 축소 */
+  body{
+    zoom: var(--print-scale);
+  }
+
+  /* 인쇄 영역에 최대한 꽉 차게 */
+  .page{
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* 가끔 wrap이 너무 넓게 잡히는 문제 방지 */
+  .wrap{
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  /* 혹시 모를 가로 넘침 방지 */
+  html, body{
+    overflow: visible !important;
+  }
+}
 </style>
 
 </head>
