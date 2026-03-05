@@ -1349,7 +1349,56 @@ padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700;">
   </div>
 </div>
 
+<script>
+(async () => {
+  // ?pdf=1 일 때만 동작
+  const isPdf = new URLSearchParams(location.search).has('pdf');
+  if (!isPdf) return;
 
+  // 1) 프린트에서 색/배경 유지
+  const style = document.createElement('style');
+  style.textContent = `
+    @media print {
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    }
+  `;
+  document.head.appendChild(style);
+
+  // 2) 이미지 lazy 로딩 강제 해제
+  document.querySelectorAll('img').forEach(img => {
+    img.loading = 'eager';
+    img.decoding = 'sync';
+    img.fetchPriority = 'high';
+  });
+
+  // 3) 스크롤로 lazy/IntersectionObserver 트리거 (전체 컨텐츠 강제 로딩)
+  const total = Math.max(
+    document.body.scrollHeight,
+    document.documentElement.scrollHeight
+  );
+
+  for (let y = 0; y < total; y += Math.max(600, window.innerHeight * 0.9)) {
+    window.scrollTo(0, y);
+    await new Promise(r => setTimeout(r, 120));
+  }
+  window.scrollTo(0, 0);
+
+  // 4) 모든 이미지 로딩 완료 대기
+  const imgs = Array.from(document.images);
+  await Promise.all(imgs.map(img => {
+    if (img.complete) return Promise.resolve();
+    return new Promise(res => { img.onload = img.onerror = () => res(); });
+  }));
+
+  // 5) 폰트 로딩 완료 대기
+  if (document.fonts && document.fonts.ready) {
+    try { await document.fonts.ready; } catch(e) {}
+  }
+
+  // 6) “이제 찍어도 된다” 신호 (puppeteer가 이걸 기다리게 할 것)
+  window.__PDF_READY__ = true;
+})();
+</script>
 
 </body>
 </html>
