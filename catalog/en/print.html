@@ -3,192 +3,108 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>GLOBIS KOREA | Print</title>
+  <title>GLOBIS KOREA | Print Catalog</title>
 
+  <!-- PDF 기본 -->
   <style>
     @page { size: A4 landscape; margin: 8mm; }
     html, body {
       margin: 0;
       padding: 0;
-      background: #020617;
+      height: auto !important;
+      overflow: visible !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
+      background: #020617 !important;
     }
 
-    /* print.html 자체는 iframe만 보여줌 */
-    #src {
-      width: 100%;
-      border: 0;
-      display: block;
-      background: #020617;
+    /* ✅ 핵심: index.html의 “가로 넘김/스크롤 UI”를 “세로 문서”로 강제 변환 (화면에서도 적용) */
+    .topbar, .drawer, .modal { display: none !important; }
+
+    /* track(가로 스냅) -> 세로 흐름 */
+    .track, main#track, #track {
+      height: auto !important;
+      display: block !important;
+      overflow: visible !important;
+      scroll-snap-type: none !important;
+      scroll-behavior: auto !important;
+      -webkit-overflow-scrolling: auto !important;
     }
 
-    /* PDF에서 하얀 배경/여백 방지 */
-    @media print {
-      html, body { background: #020617 !important; }
+    /* page(한 화면) -> 페이지 단위 블록 */
+    .page {
+      width: auto !important;
+      height: auto !important;
+      min-height: 0 !important;
+      flex: none !important;
+      display: block !important;
+      padding: 0 !important;
+      break-after: page !important;
+      page-break-after: always !important;
     }
+
+    /* ✅ 핵심: “스크롤되는 카드영역”을 펼쳐서 전부 보이게 */
+    .scroll {
+      max-height: none !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+
+    /* PDF에 필요 없는 검색/필터 UI 숨김(원하면 주석 처리) */
+    .libhead { display: none !important; }
+
+    /* 카드가 중간에서 잘리지 않게 */
+    .pcard, .card, .wrap, figure, .kv {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+
+    /* 애니/트랜지션 제거(반복/깜빡임 방지) */
+    * { animation: none !important; transition: none !important; }
   </style>
 </head>
 
 <body>
-  <!-- 같은 폴더의 index.html을 실행(스크립트 포함)시키기 위해 iframe으로 로드 -->
-  <iframe id="src" src="./index.html?__print=1"></iframe>
+  <div id="mount"></div>
 
   <script>
-    const iframe = document.getElementById("src");
-    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+    (async () => {
+      const mount = document.getElementById("mount");
 
-    async function waitReady(doc, timeoutMs = 30000) {
-      const start = Date.now();
-      while (Date.now() - start < timeoutMs) {
-        // track/page가 생기면 렌더된 것으로 간주
-        if (doc.querySelector("main#track, #track, .track") && doc.querySelector(".page, [data-page]")) return true;
-        await sleep(200);
-      }
-      return false;
-    }
+      // 같은 폴더의 index.html을 그대로 가져와서(EN은 en/index.html, KR은 kr/index.html)
+      const res = await fetch("./index.html?__=" + Date.now(), { cache: "no-store" });
+      const html = await res.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
 
-    async function waitImages(doc, timeoutMs = 45000) {
-      const start = Date.now();
-      while (Date.now() - start < timeoutMs) {
-        const imgs = Array.from(doc.images || []).filter(i => i.src);
-        const done = imgs.filter(i => i.complete).length;
-        if (imgs.length === 0 || done === imgs.length) return true;
-        await sleep(250);
-      }
-      return false;
-    }
+      // index.html의 스타일 그대로 복사(디자인 유지)
+      doc.querySelectorAll("head style").forEach(s => {
+        document.head.appendChild(s.cloneNode(true));
+      });
 
-    async function scrollAll(w, doc) {
-      // 1) window 스크롤로 lazy/observer 트리거
-      const total = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
-      for (let y = 0; y < total; y += 900) {
-        w.scrollTo(0, y);
-        await sleep(80);
-      }
-      w.scrollTo(0, 0);
-      await sleep(200);
+      // 본문에서 track + watermark만 복제
+      const track = doc.querySelector("main#track") || doc.querySelector("#track") || doc.querySelector(".track");
+      const watermark = doc.querySelector(".watermark");
 
-      // 2) 내부 .scroll 컨테이너 스크롤로 virtual/lazy 트리거
-      const scrollers = Array.from(doc.querySelectorAll(".scroll, [data-scroll], .library, .lib, .parts, .parts-list"))
-        .filter(el => el.scrollHeight > el.clientHeight + 10);
+      mount.innerHTML = "";
+      if (track) mount.appendChild(track.cloneNode(true));
+      if (watermark) mount.appendChild(watermark.cloneNode(true));
 
-      for (const el of scrollers) {
-        for (let y = 0; y < el.scrollHeight; y += 800) {
-          el.scrollTop = y;
-          await sleep(60);
-        }
-        el.scrollTop = 0;
-        await sleep(120);
-      }
-    }
-
-    function injectPrintCSS(doc) {
-      const style = doc.createElement("style");
-      style.textContent = `
-        @page { size: A4 landscape; margin: 8mm; }
-
-        html, body {
-          background: #020617 !important;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
-          height: auto !important;
-          overflow: visible !important;
-        }
-
-        /* PDF에서 불필요 UI 제거(있으면) */
-        .topbar, .drawer, .modal, .toast, .fab, .floating, .bottom, .bottom-bar,
-        .download, .download-btn, .download-buttons, .jump, .jumpbar, .nav, .navbar {
-          display: none !important;
-        }
-
-        /* 가로 스냅/가로 스크롤 → 세로 문서 */
-        main#track, #track, .track {
-          height: auto !important;
-          overflow: visible !important;
-          display: block !important;
-          scroll-snap-type: none !important;
-        }
-
-        /* 각 페이지를 종이 단위로 분리 */
-        .page, [data-page] {
-          width: auto !important;
-          height: auto !important;
-          min-height: 0 !important;
-          display: block !important;
-          break-after: page !important;
-          page-break-after: always !important;
-        }
-
-        /* 내부 스크롤 영역은 모두 펼치기 */
-        .scroll, [data-scroll], .library, .lib, .parts, .parts-list {
-          max-height: none !important;
-          height: auto !important;
-          overflow: visible !important;
-        }
-
-        /* 중간에서 카드 잘림 방지 */
-        .pcard, .card, figure, .kv, .wrap, .grid, .row, .col {
-          break-inside: avoid !important;
-          page-break-inside: avoid !important;
-        }
-
-        /* 애니/트랜지션이 반복 렌더 유발하는 경우 차단 */
-        * { animation: none !important; transition: none !important; }
-      `;
-      doc.head.appendChild(style);
-    }
-
-    function forceEagerImages(doc) {
-      doc.querySelectorAll("img").forEach(img => {
+      // 이미지 강제 로드
+      mount.querySelectorAll("img").forEach(img => {
         try {
           img.loading = "eager";
           img.decoding = "sync";
           img.fetchPriority = "high";
         } catch (e) {}
       });
-    }
 
-    function expandIframeHeight(doc) {
-      const h = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
-      iframe.style.height = h + "px";
-    }
+      // 이미지/폰트 로딩 완료 대기(푸페티어가 이 상태에서 찍게)
+      const imgs = Array.from(mount.querySelectorAll("img")).filter(i => i.src);
+      await Promise.all(imgs.map(i => (i.decode ? i.decode().catch(()=>{}) : Promise.resolve())));
+      try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch(e){}
 
-    iframe.addEventListener("load", async () => {
-      try {
-        const w = iframe.contentWindow;
-        const doc = iframe.contentDocument;
-
-        // index 스크립트 렌더 대기
-        await waitReady(doc, 30000);
-
-        // 프린트 CSS 주입 + 이미지 eager
-        injectPrintCSS(doc);
-        forceEagerImages(doc);
-
-        // 스크롤로 모든 항목 강제 로드
-        await sleep(400);
-        await scrollAll(w, doc);
-
-        // 폰트/이미지 로딩 대기
-        try { if (doc.fonts && doc.fonts.ready) await doc.fonts.ready; } catch (e) {}
-        await waitImages(doc, 45000);
-
-        // iframe 높이 확장(중요: 아래 내용 누락 방지)
-        expandIframeHeight(doc);
-        await sleep(200);
-        expandIframeHeight(doc);
-
-        // puppeteer에서 이 플래그를 기다리면 안정적
-        window.__PRINT_READY__ = true;
-      } catch (e) {
-        window.__PRINT_READY__ = false;
-        document.body.insertAdjacentHTML(
-          "beforeend",
-          `<pre style="padding:12px;color:#fff;background:#111827;white-space:pre-wrap;">PRINT ERROR: ${String(e && e.message ? e.message : e)}</pre>`
-        );
-      }
-    });
+      window.__PRINT_READY__ = true;
+    })();
   </script>
 </body>
 </html>
