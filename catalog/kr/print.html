@@ -2,143 +2,117 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>GLOBIS KOREA | E-Catalog (KR) • PRINT/PDF</title>
-
-  <!--
-    print.html (PDF용)
-    - 같은 폴더의 index.html을 그대로 불러와(스타일/본문/스크립트 포함) PDF 프린트에 맞게 레이아웃만 "세로 나열"로 바꿉니다.
-    - 웹용 E-카달로그(index.html)는 건드리지 않습니다.
-  -->
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Catalog Print</title>
 
   <style>
-    .printbar {
-      position: sticky;
-      top: 0;
-      z-index: 9999;
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-      padding: 10px 12px;
-      background: rgba(0,0,0,.78);
-      color: #fff;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      border-bottom: 1px solid rgba(255,255,255,.15);
-      backdrop-filter: blur(10px);
-    }
-    .printbar .left { font-weight: 800; letter-spacing: .2px; }
-    .printbar .right { font-size: 12px; opacity: .85; }
-    .printbar code {
-      background: rgba(255,255,255,.12);
-      border: 1px solid rgba(255,255,255,.16);
-      padding: 2px 6px;
-      border-radius: 8px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    }
-
-    :root { color-scheme: dark; }
-
-    .track {
-      height: auto !important;
-      display: block !important;
-      overflow: visible !important;
-      scroll-snap-type: none !important;
-    }
-    .page {
-      width: auto !important;
-      height: auto !important;
-      flex: none !important;
-      scroll-snap-align: unset !important;
-      padding: 24px 18px 24px !important;
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-
-    .scroll {
-      max-height: none !important;
-      overflow: visible !important;
-    }
-
-    .topbar, .drawer, .watermark, .modal {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-      height: 0 !important;
-    }
-
-    .libhead { display:none !important; }
-
-    .pcard:hover { transform:none !important; }
-
-    @page {
-      size: A4 landscape;
-      margin: 8mm;
-    }
-    @media print {
-      .printbar { display:none !important; }
-      a { text-decoration: none !important; color: inherit !important; }
-      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    }
+    /* print.html 자체는 “빈 껍데기”로 두고, index.html을 불러와서 패치합니다 */
+    html, body { margin: 0; padding: 0; background: #fff; }
+    .loading { padding: 16px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
   </style>
 </head>
+
 <body>
-
-  <div class="printbar">
-    <div class="left">GLOBIS E‑Catalog (KR) • PRINT/PDF</div>
-    <div class="right">
-      <span>PDF 저장: <code>Ctrl</code> + <code>P</code> → 대상: <b>PDF로 저장</b> → <b>가로</b> → <b>배경 그래픽</b> 켜기</span>
-    </div>
-  </div>
-
-  <div id="mount" aria-busy="true" style="padding:18px; color:#cbd5ff; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;">
-    Loading catalog… (index.html을 불러오는 중)
-  </div>
+  <div class="loading">Loading print view…</div>
 
   <script>
-    async function loadIndexHtml() {
-      const res = await fetch('./index.html?cb=' + Date.now(), { cache: 'no-store' });
-      if (!res.ok) throw new Error('Failed to load index.html: ' + res.status);
-      const htmlText = await res.text();
-      const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+    // ✅ index.html을 그대로 불러와서, 인쇄용 패치를 추가합니다.
+    fetch("index.html", { cache: "no-store" })
+      .then(r => r.text())
+      .then(html => {
+        document.open();
+        document.write(html);
+        document.close();
 
-      const styles = Array.from(doc.querySelectorAll('style'));
-      styles.forEach(st => {
-        const s = document.createElement('style');
-        s.textContent = st.textContent;
-        document.head.appendChild(s);
-      });
+        // ✅ 인쇄용 CSS 패치 주입
+        const style = document.createElement("style");
+        style.id = "PRINT_PATCH_FINAL";
+        style.textContent = `
+          /* ===== 기본 인쇄 설정 ===== */
+          @page { size: A4 landscape; margin: 10mm; }
+          @media print { * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
 
-      const main = doc.querySelector('main.track');
-      if (!main) throw new Error('index.html에서 <main class="track">를 찾지 못했습니다.');
-      const mount = document.getElementById('mount');
-      mount.replaceWith(main);
-
-      const scripts = Array.from(doc.querySelectorAll('script'));
-      for (const old of scripts) {
-        const s = document.createElement('script');
-        if (old.src) s.src = old.src;
-        else s.textContent = old.textContent;
-        document.body.appendChild(s);
-      }
-
-      setTimeout(() => {
-        try {
-          if (typeof window.setCat === 'function') window.setCat('ALL');
-          const q = document.getElementById('q');
-          if (q) {
-            q.value = '';
-            q.dispatchEvent(new Event('input', { bubbles: true }));
+          /* ===== (핵심) 조작 UI 숨김 ===== */
+          @media print {
+            button, [role="button"], .btn,
+            .nav, .controls, .pager, .bottom, .bottom-nav, .dock,
+            .topbar, .drawer, .watermark, .modal, .swipe-hint, .hint {
+              display:none !important;
+              visibility:hidden !important;
+              opacity:0 !important;
+            }
           }
-        } catch (e) {}
-      }, 50);
-    }
 
-    loadIndexHtml().catch(err => {
-      const mount = document.getElementById('mount');
-      mount.innerHTML = '<b style="color:#ffb4b4">ERROR:</b> ' + (err && err.message ? err.message : err);
-      console.error(err);
-    });
+          /* 화면에서도 미리보기 편하게(선택) */
+          .topbar, .drawer, .watermark, .modal { display:none !important; }
+
+          /* ===== (핵심) 가로 슬라이드(track) → 세로 문서로 변환 ===== */
+          .track{
+            display:block !important;
+            width:auto !important;
+            height:auto !important;
+            overflow:visible !important;
+            overflow-x:visible !important;
+            overflow-y:visible !important;
+            scroll-snap-type:none !important;
+            transform:none !important;
+          }
+
+          .page{
+            display:block !important;
+            width:auto !important;
+            height:auto !important;
+            min-height:auto !important;
+            overflow:visible !important;
+            flex:none !important;
+            transform:none !important;
+
+            /* 페이지 단위 구분 (원하면 always, 싫으면 auto로) */
+            page-break-after: always;
+            break-after: page;
+          }
+
+          /* ===== (핵심) 내부 스크롤(scroll) “완전 펼치기” ===== */
+          .scroll, .scroller, .overflow, .overflow-y, .overflowY,
+          [style*="overflow"], [style*="max-height"], [style*="height"]{
+            overflow:visible !important;
+            overflow-y:visible !important;
+            max-height:none !important;
+            height:auto !important;
+          }
+
+          /* ===== 카드/타일 잘림 방지(가능한 만큼) ===== */
+          .card, img, figure, .tile, .item{
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+
+          /* ===== 인쇄 시 레이아웃 흔들림 방지 ===== */
+          *{ animation:none !important; transition:none !important; }
+        `;
+        document.head.appendChild(style);
+
+        // ✅ beforeprint 때 한 번 더 “스크롤 박스” 강제 해제(안 먹는 케이스 방지)
+        window.addEventListener("beforeprint", () => {
+          const els = Array.from(document.querySelectorAll("*"));
+          for (const el of els) {
+            const st = getComputedStyle(el);
+            if ((st.overflowY === "auto" || st.overflowY === "scroll") && el.scrollHeight > el.clientHeight + 50) {
+              el.style.overflow = "visible";
+              el.style.overflowY = "visible";
+              el.style.maxHeight = "none";
+              el.style.height = "auto";
+            }
+          }
+        });
+
+        // ✅ 로딩 문구 제거
+        const loading = document.querySelector(".loading");
+        if (loading) loading.remove();
+      })
+      .catch(err => {
+        document.body.innerHTML = "<pre style='padding:16px'>Failed to load index.html\\n" + err + "</pre>";
+      });
   </script>
 </body>
 </html>
