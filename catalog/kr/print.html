@@ -1,298 +1,133 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>Motorized Blind Catalog</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>GLOBIS KOREA | Print Catalog</title>
 
-<style>
+  <style id="base-style"></style>
 
-@page{
-  size:A4 landscape;
-  margin:10mm;
-}
+  <style>
+    /* ===== PDF/PRINT OVERRIDES (핵심) ===== */
+    @page { size: A4 landscape; margin: 10mm; }
 
-body{
-  margin:0;
-  font-family:Arial, Helvetica, sans-serif;
-  background:#020617;
-  color:white;
-}
+    /* 배경/색상 그대로 */
+    html, body {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
 
-.page{
-  width:100%;
-  height:100%;
-  page-break-after:always;
-  padding:40px;
-  box-sizing:border-box;
-}
+    /* 상단바/하단 점프/모달 등 인터랙션 요소 제거 */
+    .topbar, .drawer, .modal { display: none !important; }
 
-.grid2{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:40px;
-}
+    /* 가로 스냅 트랙 -> 세로 문서 흐름 */
+    .track {
+      height: auto !important;
+      display: block !important;
+      overflow: visible !important;
+      scroll-snap-type: none !important;
+    }
 
-.grid3{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:25px;
-}
+    /* 각 "page" 섹션을 A4 한 장(또는 여러 장)로 흘러가게 */
+    .page{
+      width: auto !important;
+      height: auto !important;
+      min-height: 0 !important;
+      flex: none !important;
+      padding: 0 !important;
+      display: block !important;
+      break-after: page !important;
+      page-break-after: always !important;
+    }
 
-.card{
-  background:#111827;
-  border-radius:14px;
-  padding:18px;
-}
+    /* 내부 스크롤(흰 배경/잘림 원인) 제거 */
+    .scroll{
+      max-height: none !important;
+      overflow: visible !important;
+    }
 
-.card img{
-  width:100%;
-  border-radius:8px;
-}
+    /* 레이아웃 폭은 페이지 안에서 자연스럽게 */
+    .wrap{
+      width: 100% !important;
+      max-width: 100% !important;
+    }
 
-h1{
-  font-size:40px;
-  margin:0 0 10px 0;
-}
+    /* 워터마크는 프린트에서도 보이게 */
+    .watermark{
+      position: fixed !important;
+      inset: auto 0 8mm 0 !important;
+      z-index: 9999 !important;
+      display: flex !important;
+      justify-content: center !important;
+      pointer-events: none !important;
+    }
 
-h2{
-  margin-top:0;
-}
+    /* 이미지 로딩 강제(프린트 시 누락 방지) */
+    img{
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
 
-.small{
-  font-size:14px;
-  color:#9ca3af;
-}
+    /* 검색/칩(필터 UI)은 PDF에 필요 없으면 숨김 */
+    .libhead { display:none !important; }
 
-.part{
-  background:#111827;
-  border-radius:10px;
-  padding:14px;
-}
-
-.part img{
-  width:100%;
-}
-
-.part-title{
-  font-size:14px;
-  margin-top:8px;
-}
-
-.part-info{
-  font-size:12px;
-  color:#9ca3af;
-}
-
-</style>
+    /* 라이브러리 카드가 페이지에서 예쁘게 끊기도록 */
+    .pcard{
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+  </style>
 </head>
 
-
 <body>
-
-<!-- COVER -->
-<div class="page">
-
-<div class="grid2">
-
-<div>
-<h1>Motorized Blind<br>System Components</h1>
-
-<p class="small">
-Technical E-Catalog 2026<br>
-Modular Motorized Blind System<br>
-CLS (Cord Lift System)
-</p>
-
-</div>
-
-<div>
-<img src="images/hero.jpg">
-</div>
-
-</div>
-
-</div>
-
-
-<!-- COMPANY -->
-
-<div class="page">
-
-<div class="grid2">
-
-<div class="card">
-
-<h2>GLOBIS KOREA CORP</h2>
-
-<p class="small">
-Manufacturer of motorized blind components based on the CLS system.
-OEM / ODM production available.
-</p>
-
-</div>
-
-<div>
-<img src="images/components.jpg">
-</div>
-
-</div>
-
-</div>
-
-
-<!-- CLS SYSTEM -->
-
-<div class="page">
-
-<div class="grid2">
-
-<div class="card">
-
-<h2>CLS (Cord Lift System)</h2>
-
-<p class="small">
-Modular motorized blind system with high reliability and flexible configuration.
-</p>
-
-</div>
-
-<div>
-<img src="images/system.jpg">
-</div>
-
-</div>
-
-</div>
-
-
-<!-- PARTS PAGE 1 -->
-
-<div class="page">
-
-<h2>Parts Library</h2>
-
-<div class="grid3">
-
-<div class="part">
-<img src="images/9617015.jpg">
-<div class="part-title">9617015</div>
-<div class="part-info">GUIDING ROLLER SET</div>
-</div>
-
-<div class="part">
-<img src="images/9617016.jpg">
-<div class="part-title">9617016</div>
-<div class="part-info">SINGLE TAPE SHEET</div>
-</div>
-
-<div class="part">
-<img src="images/9617017.jpg">
-<div class="part-title">9617017</div>
-<div class="part-info">RIBBON TAPE SHEET</div>
-</div>
-
-</div>
-
-</div>
-
-
-<!-- PARTS PAGE 2 -->
-
-<div class="page">
-
-<h2>Parts Library</h2>
-
-<div class="grid3">
-
-<div class="part">
-<img src="images/9416002.jpg">
-<div class="part-title">9416002</div>
-<div class="part-info">BLIND SHAFT</div>
-</div>
-
-<div class="part">
-<img src="images/9416100.jpg">
-<div class="part-title">9416100</div>
-<div class="part-info">BLIND CASE</div>
-</div>
-
-<div class="part">
-<img src="images/9417000.jpg">
-<div class="part-title">9417000</div>
-<div class="part-info">CONE & SPOOL</div>
-</div>
-
-</div>
-
-</div>
-
-
-<!-- SYSTEM -->
-
-<div class="page">
-
-<div class="grid2">
-
-<div>
-<img src="images/globe_system.jpg">
-</div>
-
-<div class="card">
-
-<h2>GLOBE (Top&Down) System</h2>
-
-<p class="small">
-Top & Down blind configuration for flexible light control.
-</p>
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- APPLICATIONS -->
-
-<div class="page">
-
-<h2>Applications</h2>
-
-<div class="grid3">
-
-<img src="images/app1.jpg">
-<img src="images/app2.jpg">
-<img src="images/app3.jpg">
-
-</div>
-
-</div>
-
-
-<!-- PATENT -->
-
-<div class="page">
-
-<div class="grid2">
-
-<div class="card">
-
-<h2>Patented Technology</h2>
-
-<p class="small">
-Certified modular blind mechanism developed by Globis Korea.
-</p>
-
-</div>
-
-<div>
-<img src="images/patent.jpg">
-</div>
-
-</div>
-
-</div>
-
-
+  <!-- index.html을 그대로 가져와서 PDF용으로만 변환 -->
+  <div id="mount" style="min-height:100vh;"></div>
+
+  <script>
+    (async () => {
+      const res = await fetch("./index.html", { cache: "no-store" });
+      const html = await res.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+
+      // 1) 원본 index.html의 <style> 통째로 가져오기 (디자인 100% 동일)
+      const styleTag = doc.querySelector("style");
+      document.getElementById("base-style").textContent = styleTag ? styleTag.textContent : "";
+
+      // 2) 원본의 <main id="track"> (카탈로그 본문) 그대로 가져오기
+      const main = doc.querySelector("main#track");
+      const watermark = doc.querySelector(".watermark");
+
+      const mount = document.getElementById("mount");
+      mount.innerHTML = "";
+      if (main) mount.appendChild(main.cloneNode(true));
+      if (watermark) mount.appendChild(watermark.cloneNode(true));
+
+      // 3) PDF에서는 버튼/이벤트 필요 없음 -> 클릭/JS 흔적 제거 + 이미지 로딩 강제
+      mount.querySelectorAll("[onclick]").forEach(el => el.removeAttribute("onclick"));
+      mount.querySelectorAll("input").forEach(el => el.remove());
+
+      mount.querySelectorAll("img").forEach(img => {
+        try {
+          img.loading = "eager";
+          img.decoding = "sync";
+          img.fetchPriority = "high";
+        } catch (e) {}
+      });
+
+      // 4) 이미지 로딩 완료까지 대기 (puppeteer에서 찍을 때 누락 방지)
+      const imgs = Array.from(mount.querySelectorAll("img")).filter(i => i.src);
+      await Promise.all(imgs.map(i => i.complete ? Promise.resolve() : new Promise(r => {
+        i.addEventListener("load", r, { once:true });
+        i.addEventListener("error", r, { once:true });
+      })));
+
+      // 폰트 로딩 대기
+      try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch(e){}
+
+      // PDF용 타이틀(언어별 index.html title 그대로)
+      const t = doc.querySelector("title")?.textContent?.trim();
+      if (t) document.title = t.replace("Interactive", "Print");
+    })();
+  </script>
 </body>
 </html>
