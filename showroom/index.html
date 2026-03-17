@@ -1,1 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
 
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GLOBIS Virtual Showroom</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <h1>GLOBIS Virtual Showroom</h1>
+        <p>공간 선택 → 벽 선택 → 제품 적용</p>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <section class="panel">
+          <h2 class="panel-title">1. Space Type</h2>
+          <div class="segmented">
+            <button id="btnResidential" class="seg-btn active" type="button">Residential</button>
+            <button id="btnOffice" class="seg-btn" type="button">Office</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel-title">2. Space</h2>
+          <div id="roomTabs" class="room-tabs"></div>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel-title">3. Product</h2>
+          <div id="productButtons" class="chip-group"></div>
+        </section>
+
+        <section class="panel" id="curtainTypePanel" style="display:none;">
+          <h2 class="panel-title">4. Curtain Type</h2>
+          <div id="subTypeButtons" class="chip-group"></div>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel-title">5. Color</h2>
+          <div id="colorButtons" class="chip-group"></div>
+        </section>
+
+        <section class="panel action-panel">
+          <button id="applyBtn" class="primary-btn" type="button" disabled>Apply</button>
+          <button id="clearSelectedBtn" class="ghost-btn" type="button">Clear Selected Wall</button>
+          <button id="clearRoomBtn" class="ghost-btn danger" type="button">Clear Room</button>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel-title">Current Selection</h2>
+          <div id="statusBox" class="status-box">
+            벽을 먼저 선택해 주세요.
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel-title">Applied Items</h2>
+          <div id="appliedList" class="applied-list">
+            아직 적용된 항목이 없습니다.
+          </div>
+        </section>
+      </aside>
+
+      <section class="viewer-wrap">
+        <div class="viewer-card">
+          <div class="viewer-header">
+            <div>
+              <div id="viewerRoomName" class="viewer-room-name">Living Room</div>
+              <div class="viewer-guide">창이 있는 벽을 클릭한 뒤 제품을 선택하세요.</div>
+
+              <div id="stateControlBar" class="state-control-bar" style="display:none;">
+                <button id="toggleStateBtn" type="button">Half</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="scene" id="scene">
+            <img id="roomImage" src="images/living-room.jpg" alt="Showroom Space" />
+            <div id="productLayer" class="product-layer"></div>
+            <div id="areaLayer" class="area-layer"></div>
+            <div class="watermark">GLOBIS Virtual Showroom</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
