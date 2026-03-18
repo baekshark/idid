@@ -876,18 +876,8 @@ function createOverlay(item, label) {
   img.alt = `${label} ${item.product}`;
   img.style.filter = getProductFilter(item.color);
 
-  const badge = document.createElement("div");
-  badge.className = "overlay-badge";
-
-  const title = item.areaType === "curtain"
-    ? `${item.product} / ${item.subType} / ${item.color} / ${stateKey}`
-    : `${item.product} / ${item.color} / ${stateKey}`;
-
-  badge.textContent = `${label} · ${title}`;
-
   overlay.appendChild(img);
-  overlay.appendChild(badge);
-
+  
   return overlay;
 }
 
@@ -915,9 +905,6 @@ function renderAppliedList() {
           / ${escapeHtml(item.color)}
           / ${escapeHtml(item.state || "closed")}
         </div>
-        <button class="toggle-state-btn" data-wall-id="${escapeHtml(wall.id)}">
-          상태 변경
-        </button>
       </div>
     `);
   });
@@ -925,13 +912,6 @@ function renderAppliedList() {
   appliedList.innerHTML = items.length
     ? items.join("")
     : "아직 적용된 항목이 없습니다.";
-
-  document.querySelectorAll(".toggle-state-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const wallId = btn.dataset.wallId;
-      toggleAppliedState(wallId);
-    });
-  });
 }
 
 function resetSelection() {

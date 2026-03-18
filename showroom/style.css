@@ -352,9 +352,6 @@ body {
   z-index: 1;
 }
 
-.overlay-badge {
-  z-index: 3;
-}
 
 
 .product-image {
@@ -380,21 +377,6 @@ body {
   top: -25%;
 }
 
-.overlay-badge {
-  position: absolute;
-  left: 8px;
-  top: 8px;
-  max-width: calc(100% - 16px);
-  background: rgba(0, 0, 0, 0.45);
-  color: #fff;
-  padding: 5px 8px;
-  border-radius: 999px;
-  font-size: 10px;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
 .watermark {
   position: absolute;
@@ -511,13 +493,7 @@ body {
     border-radius: 12px;
   }
 
-  .overlay-badge {
-    font-size: 9px;
-    padding: 4px 6px;
-    left: 6px;
-    top: 6px;
-    max-width: calc(100% - 12px);
-  }
+  
 
   .watermark {
     font-size: 9px;
@@ -594,10 +570,7 @@ body {
     font-size: 12px;
   }
 
-  .overlay-badge {
-    display: none;
-  }
-
+  
   .watermark {
     font-size: 8px;
   }
