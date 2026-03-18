@@ -260,22 +260,22 @@ body {
 
 .wall-hitbox {
   position: absolute;
-  border: 2px solid rgba(255,255,255,0);
+  border: 2px solid rgba(255, 255, 255, 0);
   border-radius: 10px;
-  background: rgba(0,0,0,0);
+  background: rgba(0, 0, 0, 0);
   cursor: pointer;
   transition: 0.2s ease;
 }
 
 .wall-hitbox:hover {
   background: rgba(50, 115, 220, 0.15);
-  border-color: rgba(255,255,255,0.8);
+  border-color: rgba(255, 255, 255, 0.8);
   box-shadow: inset 0 0 0 1px rgba(50, 115, 220, 0.2);
 }
 
 .wall-hitbox.selected {
   background: rgba(50, 115, 220, 0.22);
-  border-color: rgba(255,255,255,0.95);
+  border-color: rgba(255, 255, 255, 0.95);
   box-shadow: 0 0 0 2px rgba(50, 115, 220, 0.16);
 }
 
@@ -286,8 +286,8 @@ body {
   bottom: 8px;
   font-size: 10px;
   letter-spacing: 0.4px;
-  color: rgba(255,255,255,0);
-  background: rgba(0,0,0,0);
+  color: rgba(255, 255, 255, 0);
+  background: rgba(0, 0, 0, 0);
   padding: 4px 7px;
   border-radius: 999px;
   transition: 0.2s ease;
@@ -296,7 +296,7 @@ body {
 .wall-hitbox:hover::after,
 .wall-hitbox.selected::after {
   color: #fff;
-  background: rgba(0,0,0,0.38);
+  background: rgba(0, 0, 0, 0.38);
 }
 
 .product-image-box {
@@ -385,7 +385,7 @@ body {
   left: 8px;
   top: 8px;
   max-width: calc(100% - 16px);
-  background: rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.45);
   color: #fff;
   padding: 5px 8px;
   border-radius: 999px;
@@ -405,27 +405,7 @@ body {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.6px;
-  text-shadow: 0 0 8px rgba(0,0,0,0.7);
-}
-
-@media (max-width: 1100px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .app {
-    padding: 14px;
-  }
-
-  .topbar h1 {
-    font-size: 26px;
-  }
-
-  .viewer-room-name {
-    font-size: 18px;
-  }
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.7);
 }
 
 /* ===== 상단 상태 버튼 ===== */
@@ -446,4 +426,198 @@ body {
 
 #toggleStateBtn:hover {
   background: #111;
+}
+
+@media (max-width: 1100px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    order: 2;
+  }
+
+  .viewer-wrap {
+    order: 1;
+  }
+
+  .viewer-card,
+  .panel {
+    padding: 16px;
+  }
+
+  .scene {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .app {
+    padding: 12px;
+  }
+
+  .topbar {
+    margin-bottom: 14px;
+  }
+
+  .topbar h1 {
+    font-size: 24px;
+    line-height: 1.2;
+  }
+
+  .topbar p {
+    font-size: 13px;
+  }
+
+  .viewer-card,
+  .panel {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .panel-title {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .viewer-room-name {
+    font-size: 18px;
+  }
+
+  .viewer-guide {
+    font-size: 13px;
+  }
+
+  .seg-btn,
+  .room-tab,
+  .chip,
+  .primary-btn,
+  .ghost-btn {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+
+  .chip-group,
+  .room-tabs,
+  .segmented {
+    gap: 8px;
+  }
+
+  .sidebar {
+    gap: 12px;
+  }
+
+  .scene {
+    border-radius: 12px;
+  }
+
+  .overlay-badge {
+    font-size: 9px;
+    padding: 4px 6px;
+    left: 6px;
+    top: 6px;
+    max-width: calc(100% - 12px);
+  }
+
+  .watermark {
+    font-size: 9px;
+    right: 8px;
+    bottom: 6px;
+  }
+
+  .wall-hitbox::after {
+    font-size: 8px;
+    right: 4px;
+    bottom: 4px;
+    padding: 3px 5px;
+  }
+
+  .product-image {
+    width: 135%;
+    height: 145%;
+    left: -3%;
+    top: -12%;
+  }
+
+  .product-image.curtain-image {
+    width: 175%;
+    height: 165%;
+    left: -37%;
+    top: -4%;
+  }
+
+  .product-image.curtain-image.sheer-image {
+    top: -16%;
+  }
+
+}
+
+@media (max-width: 480px) {
+  .app {
+    padding: 10px;
+  }
+
+  .topbar h1 {
+    font-size: 20px;
+  }
+
+  .topbar p {
+    font-size: 12px;
+  }
+
+  .viewer-card,
+  .panel {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .seg-btn,
+  .room-tab,
+  .chip,
+  .primary-btn,
+  .ghost-btn {
+    font-size: 12px;
+    padding: 9px 10px;
+  }
+
+  .status-box,
+  .applied-list,
+  .applied-item-desc {
+    font-size: 12px;
+  }
+
+  .viewer-room-name {
+    font-size: 16px;
+  }
+
+  .viewer-guide {
+    font-size: 12px;
+  }
+
+  .overlay-badge {
+    display: none;
+  }
+
+  .watermark {
+    font-size: 8px;
+  }
+
+  .product-image {
+    width: 128%;
+    height: 138%;
+    left: -1%;
+    top: -8%;
+  }
+
+  .product-image.curtain-image {
+    width: 160%;
+    height: 150%;
+    left: -30%;
+    top: -2%;
+  }
+
+  .product-image.curtain-image.sheer-image {
+    top: -12%;
+  }
+
 }
