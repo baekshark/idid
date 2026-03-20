@@ -1,0 +1,631 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #eef2f6;
+  --panel: rgba(255, 255, 255, 0.92);
+  --card: #ffffff;
+  --line: #dde5ee;
+  --text: #1c2430;
+  --muted: #667388;
+  --primary: #15202d;
+  --primary-soft: #eff4fa;
+  --shadow: 0 18px 45px rgba(15, 23, 42, 0.10);
+  --radius-xl: 24px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
+}
+
+html,
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #f7fafc, var(--bg));
+  color: var(--text);
+  font-family: Arial, sans-serif;
+}
+
+button {
+  font: inherit;
+}
+
+.app-shell {
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 20px;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 360px 1fr;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.brand-card,
+.panel,
+.viewer-card {
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius-xl);
+}
+
+.brand-card {
+  padding: 24px;
+}
+
+.brand-card .eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  font-weight: 700;
+  color: #7c8898;
+  margin-bottom: 8px;
+}
+
+.brand-card h1 {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.05;
+}
+
+.brand-card p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.panel {
+  padding: 18px;
+}
+
+.panel h2 {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+
+.segmented,
+.room-tabs,
+.chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.seg-btn,
+.room-tab,
+.chip,
+.primary-btn,
+.ghost-btn {
+  transition: .2s ease;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.seg-btn,
+.room-tab,
+.chip,
+.ghost-btn {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--text);
+}
+
+.seg-btn {
+  flex: 1 1 0;
+  padding: 12px 14px;
+}
+
+.room-tab,
+.chip {
+  padding: 10px 14px;
+}
+
+.seg-btn.active,
+.room-tab.active,
+.chip.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.chip-grid--colors .chip {
+  position: relative;
+  padding-left: 34px;
+}
+
+.color-dot {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, .12);
+}
+
+.action-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.primary-btn,
+.ghost-btn {
+  width: 100%;
+  padding: 13px 14px;
+  border-radius: 14px;
+}
+
+.primary-btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+}
+
+.primary-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ghost-btn.danger {
+  color: #b42318;
+}
+
+.status-box,
+.applied-item {
+  border: 1px solid var(--line);
+  background: #fafcff;
+  border-radius: 14px;
+}
+
+.status-box {
+  min-height: 62px;
+  padding: 12px 14px;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+
+
+.viewer-wrap {
+  min-width: 0;
+}
+
+.viewer-card {
+  padding: 18px;
+}
+
+.viewer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.viewer-room-name {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.viewer-guide {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.scene {
+  position: relative;
+  width: 100%;
+  max-width: 1220px;
+  margin: 0 auto;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #e9edf2;
+  line-height: 0;
+}
+
+.scene>img {
+  width: 100%;
+  display: block;
+}
+
+.product-layer,
+.area-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.product-layer {
+  z-index: 6;
+  pointer-events: none;
+}
+
+.area-layer {
+  z-index: 9;
+}
+
+.window-hitbox {
+  position: absolute;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+  box-shadow: none;
+  transition: .2s ease;
+}
+
+.window-hitbox:hover {
+  background: transparent;
+  box-shadow: none;
+}
+
+.window-hitbox.selected {
+  background: transparent;
+  box-shadow: none;
+}
+
+.window-hitbox::after {
+  content: "";
+  display: none;
+}
+
+.product-instance {
+  position: absolute;
+  pointer-events: auto;
+}
+
+.product-instance.is-selected {
+  filter: drop-shadow(0 0 0.45rem rgba(63, 131, 248, 0.35));
+}
+
+.window-product {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.window-product.blind {
+  border-radius: 0;
+}
+
+.headrail,
+.bottomrail,
+.curtain-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 50%, #e0e0e0 100%);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .14), inset 0 1px 0 rgba(255, 255, 255, .85);
+}
+
+.headrail {
+  top: 0;
+  height: 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, .15);
+}
+
+.bottomrail {
+  bottom: 0;
+  height: 8px;
+  border-top: 1px solid rgba(0, 0, 0, .11);
+}
+
+.fabric-surface {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 18px;
+  overflow: visible;
+}
+
+.fabric-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 8px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .04);
+}
+
+.fabric-sheet.roll {
+  background: linear-gradient(90deg, rgba(255, 255, 255, .18) 0%, rgba(255, 255, 255, .08) 16%, rgba(0, 0, 0, .04) 52%, rgba(255, 255, 255, .10) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, 0) 20%, rgba(0, 0, 0, .03) 100%), var(--fabric-color);
+  opacity: 0.9;
+}
+
+.fabric-sheet.zebra {
+  background:
+    repeating-linear-gradient(180deg, var(--fabric-color) 0 24px, rgba(255, 255, 255, .34) 24px 36px, var(--fabric-color) 36px 60px, rgba(255, 255, 255, .34) 60px 72px),
+    linear-gradient(90deg, rgba(255, 255, 255, .14), rgba(0, 0, 0, .04) 55%, rgba(255, 255, 255, .10));
+}
+
+.fabric-sheet.zebra::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(180deg, transparent 0 24px, rgba(255, 255, 255, .80) 24px 36px, transparent 36px 60px, rgba(255, 255, 255, .80) 60px 72px);
+  opacity: .50;
+}
+
+.fabric-sheet.honeycomb {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, 0) 12%),
+    repeating-linear-gradient(180deg, color-mix(in srgb, var(--fabric-color) 80%, white) 0 6px, color-mix(in srgb, var(--fabric-color) 80%, black) 6px 13px, color-mix(in srgb, var(--fabric-color) 88%, white) 13px 20px, color-mix(in srgb, var(--fabric-color) 78%, black) 20px 27px),
+    linear-gradient(90deg, rgba(255, 255, 255, .12), rgba(0, 0, 0, .04) 55%, rgba(255, 255, 255, .10));
+    opacity: 0.9;
+}
+
+.fabric-sheet.honeycomb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: .55;
+  background: repeating-linear-gradient(180deg, transparent 0 6px, rgba(255, 255, 255, .22) 6px 7px, transparent 7px 13px, rgba(0, 0, 0, .09) 13px 14px);
+}
+
+.fabric-sheet.roman {
+  background: linear-gradient(90deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .03) 18%, rgba(0, 0, 0, .04) 62%, rgba(255, 255, 255, .08)),
+    linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(0, 0, 0, .03)), var(--fabric-color);
+}
+
+.slat-stack {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 18px;
+  bottom: 8px;
+  overflow: hidden;
+}
+
+.slat-fill.wood {
+  background:
+    repeating-linear-gradient(180deg, color-mix(in srgb, var(--fabric-color) 82%, white) 0 1px, color-mix(in srgb, var(--fabric-color) 90%, white) 1px 2px, var(--fabric-color) 2px 12px, color-mix(in srgb, var(--fabric-color) 76%, black) 12px 14px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, .05) 0 18px, rgba(0, 0, 0, .04) 18px 36px);
+}
+
+.slat-fill.aluminum {
+  background: repeating-linear-gradient(180deg, color-mix(in srgb, var(--fabric-color) 86%, white) 0 1px, color-mix(in srgb, var(--fabric-color) 92%, white) 1px 2px, var(--fabric-color) 2px 7px, color-mix(in srgb, var(--fabric-color) 80%, black) 7px 8px);
+}
+
+.slat-fill {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .04), inset 0 -10px 10px rgba(0, 0, 0, .04);
+}
+
+.slat-ladder {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(84, 90, 97, .35);
+}
+
+.roman-stack {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 18px;
+  overflow: hidden;
+}
+
+.roman-fold {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--fabric-color) 82%, white) 0%, color-mix(in srgb, var(--fabric-color) 96%, white) 45%, color-mix(in srgb, var(--fabric-color) 82%, black) 100%);
+}
+
+.roman-fold.top {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, .18), inset 0 1px 0 rgba(255, 255, 255, .25), inset 0 -8px 10px rgba(0, 0, 0, .08);
+}
+
+.roman-fold.slim {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .12), inset 0 1px 0 rgba(255, 255, 255, .18);
+}
+
+.roman-fold.slim::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, .22);
+}
+
+.roman-drop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+}
+
+.roman-rod {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(0, 0, 0, .22);
+}
+
+.curtain-product {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.curtain-rail {
+  top: 0;
+  height: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, .15);
+}
+
+.curtain-panel {
+  position: absolute;
+  top: 10px;
+  bottom: 0;
+  overflow: hidden;
+  background: var(--curtain-fill);
+}
+
+.curtain-panel.left {
+  left: 0;
+  box-shadow: inset -14px 0 22px rgba(0, 0, 0, .10), inset 2px 0 0 rgba(255, 255, 255, .18);
+}
+
+.curtain-panel.right {
+  right: 0;
+  box-shadow: inset 14px 0 22px rgba(0, 0, 0, .10), inset -2px 0 0 rgba(255, 255, 255, .18);
+}
+
+.curtain-center-overlap {
+  position: absolute;
+  top: 10px;
+  bottom: 0;
+  background: rgba(0, 0, 0, .06);
+  filter: blur(2px);
+}
+
+.watermark {
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  z-index: 20;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-shadow: 0 0 8px rgba(0, 0, 0, .7);
+}
+
+@media (max-width: 1120px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .brand-card h1 {
+    font-size: 26px;
+  }
+
+  .viewer-room-name {
+    font-size: 20px;
+  }
+
+  .panel,
+  .brand-card,
+  .viewer-card {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .seg-btn,
+  .room-tab,
+  .chip,
+  .primary-btn,
+  .ghost-btn {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 560px) {
+  .app-shell {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .sidebar {
+    gap: 12px;
+  }
+
+  .brand-card,
+  .panel,
+  .viewer-card {
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .brand-card h1 {
+    font-size: 22px;
+  }
+
+  .brand-card p,
+  .viewer-guide {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .panel h2 {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .viewer-header {
+    margin-bottom: 10px;
+  }
+
+  .viewer-room-name {
+    font-size: 18px;
+  }
+
+  .segmented,
+  .room-tabs,
+  .chip-grid {
+    gap: 8px;
+  }
+
+  .seg-btn,
+  .room-tab,
+  .chip,
+  .primary-btn,
+  .ghost-btn {
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+
+  .primary-btn,
+  .ghost-btn {
+    border-radius: 12px;
+  }
+
+  .status-box {
+    min-height: auto;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .watermark {
+    display: none;
+  }
+}
+
+.viewer-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.viewer-header-right {
+  display: flex;
+  align-items: center;
+}
+
+.viewer-header-right .segmented {
+  flex-wrap: nowrap;
+  gap: 8px;
+}
