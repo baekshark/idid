@@ -47,7 +47,7 @@ const SHOWROOM_DATA = {
       },
       areas: [
         { id: "living-1", label: "Living Window 1", left: 14.4, top: 21.0, width: 12.6, height: 44.0, panes: 1 },
-        { id: "living-2", label: "Living Window 2", left: 27.6, top: 21.0, width: 44.8, height: 44.0, panes: 1 },
+        { id: "living-2", label: "Living Window 2", left: 27.5, top: 21.0, width: 44.8, height: 44.0, panes: 1 },
         { id: "living-3", label: "Living Window 3", left: 72.9, top: 21.0, width: 12.6, height: 44.0, panes: 1 },
       ],
     },
